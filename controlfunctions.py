@@ -7,6 +7,27 @@ K_RIGHT = 275
 K_LEFT = 276
 K_LSHIFT = 304
 
+def is_off_road(txt):
+    if len(txt) > 10:
+        return True
+    else:
+        return False
+
+def dropoff(stat):
+    for i in range(9):
+        if np.abs(stat[-i-1]-stat[-i-2]) > br_thresh:
+            return 10-i #Returns the rectangle right after the curve drops off
+            break
+    return 1
+
+def curve_to_mph(im):
+    width, height = im.size
+    im_rects = []
+    for i in range(10):
+        im_rects.append(im.crop((i*19,0,(i+1)*19,height)))
+    stat = [ImageStat.Stat(im).mean[0] for im in im_rects]
+    return dropoff(stat)
+
 def get_keys(keystates):
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
