@@ -62,46 +62,92 @@ def get_keys(keystates):
     return keystates
 
 def send_keys(board, keystates):
-    #do something about the key states here, now that the event queue has been processed
-    if keystates['up']:
-        print("Up")
-        board.digitalWrite(9, "HIGH")
+    if isinstance(keystates, dict):
+        #do something about the key states here, now that the event queue has been processed
+        if keystates['up']:
+            print("Up")
+            board.digitalWrite(9, "HIGH")
+        else:
+            board.digitalWrite(9, "LOW")
+
+
+        if keystates['down']:
+            print("Down")
+            board.digitalWrite(7, "HIGH")
+        else:
+            board.digitalWrite(7, "LOW")
+
+
+        if keystates['left'] and keystates['shift']:
+            print("Hard left")
+            board.digitalWrite(3, "HIGH")
+        else:
+            board.digitalWrite(3, "LOW")
+
+
+        if keystates['left'] and not keystates['shift']:
+            print("Left")
+            board.digitalWrite(5, "HIGH")
+        else:
+            board.digitalWrite(5, "LOW")
+
+
+        if keystates['right'] and keystates['shift']:
+            print("Hard right")
+            board.digitalWrite(13, "HIGH")
+        else:
+            board.digitalWrite(13, "LOW")
+
+
+        if keystates['right'] and not keystates['shift']:
+            print("Right")
+            board.digitalWrite(11, "HIGH")
+        else:
+            board.digitalWrite(11, "LOW")
+
+        print("---------------------\n")
+
     else:
-        board.digitalWrite(9, "LOW")
+        #do something about the key states here, now that the event queue has been processed
+        if keystates[0][3]:
+            print("Up")
+            board.digitalWrite(9, "HIGH")
+        else:
+            board.digitalWrite(9, "LOW")
 
 
-    if keystates['down']:
-        print("Down")
-        board.digitalWrite(7, "HIGH")
-    else:
-        board.digitalWrite(7, "LOW")
+        if keystates[0][0]:
+            print("Down")
+            board.digitalWrite(7, "HIGH")
+        else:
+            board.digitalWrite(7, "LOW")
 
 
-    if keystates['left'] and keystates['shift']:
-        print("Hard left")
-        board.digitalWrite(3, "HIGH")
-    else:
-        board.digitalWrite(3, "LOW")
+        if keystates[0][4] and keystates[0][1]:
+            print("Hard left")
+            board.digitalWrite(3, "HIGH")
+        else:
+            board.digitalWrite(3, "LOW")
 
 
-    if keystates['left'] and not keystates['shift']:
-        print("Left")
-        board.digitalWrite(5, "HIGH")
-    else:
-        board.digitalWrite(5, "LOW")
+        if keystates[0][4] and not keystates[0][1]:
+            print("Left")
+            board.digitalWrite(5, "HIGH")
+        else:
+            board.digitalWrite(5, "LOW")
 
 
-    if keystates['right'] and keystates['shift']:
-        print("Hard right")
-        board.digitalWrite(13, "HIGH")
-    else:
-        board.digitalWrite(13, "LOW")
+        if keystates[0][2] and keystates[0][1]:
+            print("Hard right")
+            board.digitalWrite(13, "HIGH")
+        else:
+            board.digitalWrite(13, "LOW")
 
 
-    if keystates['right'] and not keystates['shift']:
-        print("Right")
-        board.digitalWrite(11, "HIGH")
-    else:
-        board.digitalWrite(11, "LOW")
+        if keystates[0][2] and not keystates[0][1]:
+            print("Right")
+            board.digitalWrite(11, "HIGH")
+        else:
+            board.digitalWrite(11, "LOW")
 
-    print("---------------------\n")
+        print("---------------------\n")
