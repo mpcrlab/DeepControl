@@ -6,6 +6,7 @@ import io, os
 import h5py
 
 from skimage import color
+from skimage.transform import *
 from PIL import Image, ImageFont, ImageDraw, ImageOps, ImageStat
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
@@ -51,14 +52,7 @@ pygame.key.set_repeat(50, 50)
 
 print("Done initializing pygame")
 
-keystates={'up':False, 'down':False, 'left':False, 'right':False, 'shift':False}
-
-## Configuring pygame.key.get_pressed() key codes
-K_UP = 273
-K_DOWN = 274
-K_RIGHT = 275
-K_LEFT = 276
-K_LSHIFT = 304
+keystates={'up':False, 'down':False, 'left':False, 'right':False, 'shift':False, 'space':False}
 
 #Creating "dataset" directory and cd-ing to it
 print("Creating 'dataset' folder")
@@ -87,15 +81,15 @@ br_thresh = 50
 
 class Data():
     def __init__(self):
-        self.actions = np.zeros((1,5))
-        self.images = np.zeros((1,480,640,3))
+        self.actions = np.zeros((1,6))
+        self.images = np.zeros((1,240,320,1))
 
     def load(self):
         pass
 
     def save(self, dset_name):
 
-        self.images = np.array(self.images, dtype='uint8')
+        self.images = np.asarray(self.images)
 
         self.actions = np.array(self.actions, dtype='float16')
 
@@ -120,8 +114,16 @@ delta_x_mph = x1_mph-x0_mph
 delta_y_mph = y1_mph-y0_mph
 
 
+## initialize data collection boolean variables
+last_frame_space = False
+
+is_collecting = False
+
+terminal = False
+
+
 ##Initialize # of frames
-frame_num = 100
+frame_num = 1000
 
 ##-------------------------------------------------------##
 ##                     Starting                          ##
@@ -142,19 +144,39 @@ brightness_list = []
 
 for _ in range(frame_num):#while True:
     frame_start = time.time()
-    keystates = get_keys(keystates) #Get keys that are currently pressed down, returns a dictionary
-    keystates_array = keystates.values() #Converts keystates into an array
-    keystates_array = np.asarray(keystates_array) + 0.0 #Converts into Numpy array of 0's and 1's
-    keystates_array = keystates_array[:,None] #Adds an extra dimension
-    keystates_array = np.transpose(keystates_array) #Transposes array
+    keystates = get_keys(keystates) # Get keys that are currently pressed down, returns keystates dictionary
+    if keystates == 'terminal':
+        break
+    # Data collection on/off switch
+    if keystates['space'] and not last_frame_space:
+        # Turn data collection on/off
+        is_collecting = not is_collecting
+        if is_collecting:
+            print("IS NOW COLLECTING DATA")
+        else:
+            print("STOPPED COLLECTING DATA")
+    last_frame_space = keystates['space']
 
-    cam.wait_for_frames() #This gets camera input stream as cam.color array
+    keystates_array = keystates.values() # Converts keystates into an array
+    keystates_array = np.asarray(keystates_array) + 0.0 # Converts into Numpy array of 0's and 1's
+    keystates_array = keystates_array[:,None] # Adds an extra dimension
+    keystates_array = np.transpose(keystates_array) # Transposes array
 
+    cam.wait_for_frames() # This gets camera input stream as cam.color array
     # Create h5py file here, containing the numpy array and the array keystates_array
-    c = cam.color[None, :]
-    d.images = np.concatenate((d.images, c))
-    d.actions = np.concatenate((d.actions, keystates_array))
-    
+    #c = color.rgb2gray(cam.color)
+    c = np.mean(cam.color, 2)
+    e = c
+    c = resize(c, (240,320))
+    c = np.asarray(c)
+    c = c[None, :, :, None]
+
+    if is_collecting:
+        print("Is collecting...")
+        d.images = np.concatenate((d.images, c))
+        d.actions = np.concatenate((d.actions, keystates_array))
+
+
 
     send_keys(board, keystates) #Send appropriate keystrokes from keystates through the arduino
     elapsed_frame = time.time()-frame_start
@@ -171,11 +193,9 @@ print("FPS: %s; Total time elapsed: %s seconds" % (fps,elapsed))
 
 fig,ax = plt.subplots(1)
 
-im = cam.color
+ax.imshow(e)
 
-ax.imshow(color.rgb2gray(cam.color))
-
-rect_mph = patches.Rectangle((x0_mph,y0_mph),delta_x_mph,delta_y_mph,linewidth=1,edgecolor='r',facecolor='none')
+rect_mph = patches.Rectangle((x0_mph/2,y0_mph/2),delta_x_mph/2,delta_y_mph/2,linewidth=1,edgecolor='r',facecolor='none')
 
 ax.add_patch(rect_mph)
 
