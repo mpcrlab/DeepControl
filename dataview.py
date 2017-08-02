@@ -14,12 +14,9 @@ h5f = h5py.File('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset/dataset.h5', 'r'
 X = np.asarray(h5f['X'])
 Y1 = np.asarray(h5f['Y'])
 Y1 = Y1.astype(int)
+Z = np.asarray(h5f['Z'])
+Z = Z.astype(int)
 
-
-Y=np.zeros((Y1.shape[0],np.max(Y1)+1))
-
-for i in range(Y1.shape[0]):
-    Y[i,Y1[i]]=1
 
 nframes=Y1.shape[0]
 
@@ -54,6 +51,7 @@ for i in range(nframes):
     ax.clear()
     ax.imshow(X[i,:,:])
     key_string = return_keys(Y1[i])
-    print(key_string)
+    #print(key_string)
+    print(Z[i])
     fig.canvas.draw()
-    time.sleep(0.2)
+    #time.sleep(0.2)
