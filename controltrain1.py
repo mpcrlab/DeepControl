@@ -4,6 +4,7 @@ from pygame import mixer
 import time
 from controlfunctions import *
 import io, os
+from os import walk
 import h5py
 
 from skimage import color
@@ -62,13 +63,26 @@ if not os.path.exists('dataset'):
     os.makedirs('dataset')
 print("'dataset' folder created")
 
-# Detecting already saved data files
-dataset_max_num = -1
+# Detecting already saved data files and saving version numbers to a list
+file_nums = []
 for (dirpath, dirnames, filenames) in walk('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset'):
-    if filenames[12] > dataset_max_num:
-        dataset_max_num = filenames[12]
-dataset_max_num += 1
+    for i in range(len(filenames)):
+        file_nums.append(int(filenames[i][7]))
 
+# Function to determine which file number to use
+def determine_batch_num(file_nums):
+    last_contiguous = 0
+    if len(file_nums) == 0:
+        return 0
+    if not file_nums[0] == 0:
+        return 0
+    for i in range(len(file_nums)):
+        if file_nums[i] - last_contiguous == 1:
+            last_contiguous += 1
+        elif file_nums[i] - last_contiguous > 1:
+            return last_contiguous + 1
+    else:
+        return file_nums[len(file_nums)-1] + 1
 
 # Load audio countdown cue
 mixer.init()
@@ -159,7 +173,7 @@ start = time.time()
 brightness_list = []
 
 current_frame = 0
-current_batch = dataset_max_num
+current_batch = determine_batch_num(file_nums)
 
 while True:
     while current_frame < frame_num:
@@ -208,8 +222,12 @@ while True:
         elapsed_frame = time.time()-frame_start
         print("Elapsed time: %s seconds" % elapsed_frame)
 
+    # Perform this when batch collect is done
     print("Batch %s complete and saving" % current_batch)
     d.save('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset/dataset%s.h5' % current_batch)
+    file_nums.append(current_batch)
+    file_nums.sort()
+    # Wait for key command
     while True:
         time.sleep(0.5)
         print("Saved. Press the 1 key (top of the keyboard) to continue on next batch...")
@@ -220,7 +238,7 @@ while True:
                     next_batch = True
         if next_batch == True:
             break
-    current_batch += 1
+    current_batch = determine_batch_num(file_nums)
     current_frame = 0
     is_collecting = False
     next_batch = False
