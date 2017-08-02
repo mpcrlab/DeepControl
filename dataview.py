@@ -7,18 +7,28 @@ import math
 import matplotlib.cbook as cbook
 from scipy.misc import imshow
 import time
+from os import walk
+
+data_files = []
+
+for (dirpath, dirnames, filenames) in walk('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset'):
+    data_files.extend(filenames)
+    break
+
+h5f = []
+
+for i in range(len(data_files)):
+    h5f.append(h5py.File('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset/' + data_files[i]))
+
+for i in range(len(h5f)):
+    image_set = np.asarray(h5f[i]['X'])
+    action_array_set = np.asarray(h5f[i]['Y'])
+    action_array_set = action_array_set.astype(int)
+    mph = np.asarray(h5f[i]['Z'])
+    mph = mph.astype(int)
 
 
-h5f = h5py.File('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset/dataset.h5', 'r')
-
-X = np.asarray(h5f['X'])
-Y1 = np.asarray(h5f['Y'])
-Y1 = Y1.astype(int)
-Z = np.asarray(h5f['Z'])
-Z = Z.astype(int)
-
-
-nframes=Y1.shape[0]
+nframes = action_array_set.shape[0]
 
 fig = plt.figure()
 ax = fig.add_subplot(111)
@@ -27,7 +37,7 @@ plt.ion()
 fig.show()
 fig.canvas.draw()
 
-X = np.squeeze(X)
+image_set = np.squeeze(image_set)
 
 def return_keys(keystates):
     key_string = ""
@@ -49,9 +59,7 @@ def return_keys(keystates):
 
 for i in range(nframes):
     ax.clear()
-    ax.imshow(X[i,:,:])
-    key_string = return_keys(Y1[i])
-    #print(key_string)
-    print(Z[i])
+    ax.imshow(image_set[i,:,:])
+    key_string = return_keys(action_array_set[i])
+    print(key_string)
     fig.canvas.draw()
-    #time.sleep(0.2)
