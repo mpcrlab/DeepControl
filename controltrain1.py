@@ -1,5 +1,6 @@
 from Arduino import Arduino
 import pygame, sys
+from pygame import mixer
 import time
 from controlfunctions import *
 import io, os
@@ -54,13 +55,24 @@ print("Done initializing pygame")
 
 keystates={'up':False, 'down':False, 'left':False, 'right':False, 'shift':False, 'space':False}
 
-#Creating "dataset" directory and cd-ing to it
+# Creating "dataset" directory and cd-ing to it
 print("Creating 'dataset' folder")
 os.setuid(1000) #Changing permissions to user in order to create a folder that is non-root
 if not os.path.exists('dataset'):
     os.makedirs('dataset')
 print("'dataset' folder created")
 
+# Detecting already saved data files
+dataset_max_num = -1
+for (dirpath, dirnames, filenames) in walk('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset'):
+    if filenames[12] > dataset_max_num:
+        dataset_max_num = filenames[12]
+dataset_max_num += 1
+
+
+# Load audio countdown cue
+mixer.init()
+mixer.music.load('/home/mpcr/Desktop/rodrigo/deepcontrol/countdown.mp3')
 
 #Setting up OCR
 tools = pyocr.get_available_tools()
@@ -127,7 +139,7 @@ terminal = False
 
 
 ##Initialize # of frames in a batch
-frame_num = 1000
+frame_num = 500
 
 ##-------------------------------------------------------##
 ##                     Starting                          ##
@@ -147,10 +159,9 @@ start = time.time()
 brightness_list = []
 
 current_frame = 0
-current_batch = 0
+current_batch = dataset_max_num
 
 while True:
-
     while current_frame < frame_num:
         frame_start = time.time()
         keystates = get_keys(keystates) # Get keys that are currently pressed down, returns keystates dictionary
@@ -190,14 +201,18 @@ while True:
             d.actions = np.concatenate((d.actions, keystates_array))
             d.mph = np.concatenate((d.mph, mph))
             current_frame += 1
+
+            if frame_num - current_frame == 170:
+                mixer.music.play()
         send_keys(board, keystates) #Send appropriate keystrokes from keystates through the arduino
         elapsed_frame = time.time()-frame_start
         print("Elapsed time: %s seconds" % elapsed_frame)
 
     print("Batch %s complete and saving" % current_batch)
     d.save('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset/dataset%s.h5' % current_batch)
-    print("Saved. Press the 1 key (top of the keyboard) to continue on next batch...")
     while True:
+        time.sleep(0.5)
+        print("Saved. Press the 1 key (top of the keyboard) to continue on next batch...")
         next_batch = False
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
@@ -209,12 +224,15 @@ while True:
     current_frame = 0
     is_collecting = False
     next_batch = False
+    d.images = np.zeros((1,240,320,1))
+    d.actions = np.zeros((1,6))
+    d.mph = np.zeros((1))
     print("Starting batch %s ..." % current_batch)
 
-elapsed = time.time()-start
-fps = frame_num/elapsed
+elapsed_total = time.time()-start
+fps = frame_num/elapsed_total
 
-print("FPS: %s; Total time elapsed: %s seconds" % (fps,elapsed))
+print("FPS: %s; Total time elapsed: %s seconds" % (fps,elapsed_total))
 
 ##Print crop rectangles
 
