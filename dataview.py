@@ -14,18 +14,25 @@ data_files = []
 for (dirpath, dirnames, filenames) in walk('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset'):
     data_files.extend(filenames)
     break
-
+print(data_files)
 h5f = []
 
 for i in range(len(data_files)):
     h5f.append(h5py.File('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset/' + data_files[i]))
 
-for i in range(len(h5f)):
-    image_set = np.asarray(h5f[i]['X'])
-    action_array_set = np.asarray(h5f[i]['Y'])
-    action_array_set = action_array_set.astype(int)
-    mph = np.asarray(h5f[i]['Z'])
-    mph = mph.astype(int)
+image_set = np.asarray(h5f[0]['X'])
+action_array_set = np.asarray(h5f[0]['Y'])
+action_array_set = action_array_set.astype(int)
+mph = np.asarray(h5f[0]['Z'])
+mph = mph.astype(int)
+
+if len(h5f) > 1:
+    for i in range(1,len(h5f)):
+        image_set = np.concatenate((image_set, np.asarray(h5f[i]['X'])))
+        action_array_set = np.concatenate((action_array_set, np.asarray(h5f[i]['Y'])))
+        action_array_set = action_array_set.astype(int)
+        mph = np.concatenate((mph, h5f[i]['Z']))
+        mph = mph.astype(int)
 
 
 nframes = action_array_set.shape[0]
@@ -59,6 +66,7 @@ def return_keys(keystates):
 
 for i in range(nframes):
     ax.clear()
+    print("frame " + str(i))
     ax.imshow(image_set[i,:,:])
     key_string = return_keys(action_array_set[i])
     print(key_string)
