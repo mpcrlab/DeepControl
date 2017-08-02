@@ -83,6 +83,7 @@ class Data():
     def __init__(self):
         self.actions = np.zeros((1,6))
         self.images = np.zeros((1,240,320,1))
+        self.mph = np.zeros((1))
 
     def load(self):
         pass
@@ -93,12 +94,14 @@ class Data():
 
         self.actions = np.array(self.actions, dtype='float16')
 
+        self.mph = np.array(self.mph, dtype='int')
 
-	h5f = h5py.File(dset_name, 'w')
-	h5f.create_dataset('X', data=self.images)
-	h5f.create_dataset('Y', data=self.actions)
 
-	h5f.close()
+        h5f = h5py.File(dset_name, 'w')
+        h5f.create_dataset('X', data=self.images)
+        h5f.create_dataset('Y', data=self.actions)
+
+        h5f.close()
 
 d = Data()
 
@@ -123,7 +126,7 @@ terminal = False
 
 
 ##Initialize # of frames
-frame_num = 1000
+frame_num = 100
 
 ##-------------------------------------------------------##
 ##                     Starting                          ##
@@ -171,11 +174,16 @@ for _ in range(frame_num):#while True:
     c = np.asarray(c)
     c = c[None, :, :, None]
 
+    im = Image.fromarray(cam.color)
+    cropped_mph_im = im.crop(crop_mph)
+    mph = np.full((1),curve_to_mph(cropped_mph_im, br_thresh))
+
+
     if is_collecting:
         print("Is collecting...")
         d.images = np.concatenate((d.images, c))
         d.actions = np.concatenate((d.actions, keystates_array))
-
+        d.mph = np.concatenate((d.mph, mph))
 
 
     send_keys(board, keystates) #Send appropriate keystrokes from keystates through the arduino
@@ -195,7 +203,7 @@ fig,ax = plt.subplots(1)
 
 ax.imshow(e)
 
-rect_mph = patches.Rectangle((x0_mph/2,y0_mph/2),delta_x_mph/2,delta_y_mph/2,linewidth=1,edgecolor='r',facecolor='none')
+rect_mph = patches.Rectangle((x0_mph,y0_mph),delta_x_mph,delta_y_mph,linewidth=1,edgecolor='r',facecolor='none')
 
 ax.add_patch(rect_mph)
 
