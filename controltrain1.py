@@ -133,6 +133,10 @@ class Data():
 
 d = Data()
 
+sub_batches = [np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1))]
+
+
+
 #The resolution is 640x480
 
 ##Setting up crop parameters for "MPH" window
@@ -227,8 +231,7 @@ while True:
         break
     # Perform this when batch collect is done
     print("Batch %s complete" % current_batch)
-    # Wait for key command to save or not save
-    while True:
+    while True: # Wait for key command to save or not save
         print("Press the 1 key (top of the keyboard) to save and continue on next batch...")
         print("Alternatively, press the 2 key to delete current batch and retry current batch")
         next_batch = False
