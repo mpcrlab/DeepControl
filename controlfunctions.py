@@ -1,4 +1,6 @@
 import pygame, sys
+import numpy as np
+from PIL import Image, ImageStat
 
 ## Configuring pygame.key.get_pressed() key codes
 K_UP = 273
@@ -6,6 +8,7 @@ K_DOWN = 274
 K_RIGHT = 275
 K_LEFT = 276
 K_LSHIFT = 304
+K_SPACE = 32
 
 def is_off_road(txt):
     if len(txt) > 10:
@@ -13,26 +16,26 @@ def is_off_road(txt):
     else:
         return False
 
-def dropoff(stat):
+def dropoff(stat, br_thresh):
     for i in range(9):
         if np.abs(stat[-i-1]-stat[-i-2]) > br_thresh:
             return 10-i #Returns the rectangle right after the curve drops off
             break
     return 1
 
-def curve_to_mph(im):
+def curve_to_mph(im, br_thresh):
     width, height = im.size
     im_rects = []
     for i in range(10):
         im_rects.append(im.crop((i*19,0,(i+1)*19,height)))
     stat = [ImageStat.Stat(im).mean[0] for im in im_rects]
-    return dropoff(stat)
+    return dropoff(stat, br_thresh)
 
 def get_keys(keystates):
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
-            sys.exit()
+            return 'terminal'
         keys = pygame.key.get_pressed()
         #check for key down events
         if event.type == pygame.KEYDOWN:
@@ -46,6 +49,8 @@ def get_keys(keystates):
                 keystates['right']=True
             if event.key == K_LSHIFT:
                 keystates['shift']=True
+            if event.key == K_SPACE:
+                keystates['space']=True
 
         #check for key up events
         if event.type == pygame.KEYUP:
@@ -59,6 +64,8 @@ def get_keys(keystates):
                 keystates['right']=False
             if event.key == K_LSHIFT:
                 keystates['shift']=False
+            if event.key == K_SPACE:
+                keystates['space']=False
     return keystates
 
 def send_keys(board, keystates):
