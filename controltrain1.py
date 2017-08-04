@@ -171,8 +171,6 @@ print("Device created.")
 
 start = time.time()
 
-brightness_list = []
-
 current_frame = 0
 current_batch = determine_batch_num(file_nums)
 
@@ -231,10 +229,10 @@ while True:
     print("Batch %s complete" % current_batch)
     # Wait for key command to save or not save
     while True:
-        time.sleep(0.5)
         print("Press the 1 key (top of the keyboard) to save and continue on next batch...")
         print("Alternatively, press the 2 key to delete current batch and retry current batch")
         next_batch = False
+        time.sleep(1)
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_1:
