@@ -86,8 +86,6 @@ def determine_batch_num(file_nums):
 
 # Load audio countdown cue
 mixer.init()
-mixer.music.load('/home/mpcr/Desktop/rodrigo/deepcontrol/countdown.mp3')
-
 
 #Setting up OCR
 tools = pyocr.get_available_tools()
@@ -133,12 +131,8 @@ class Data():
 
 d = Data()
 
-sub_batches = [np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1))]
-current_sub_batch = 0
-
 
 #The resolution is 640x480
-
 ##Setting up crop parameters for "MPH" window
 crop_mph = (180,40,375,45)
 x0_mph = crop_mph[0]
@@ -151,11 +145,6 @@ delta_y_mph = y1_mph-y0_mph
 
 ## initialize data collection boolean variables
 last_frame_space = False
-
-is_collecting = False
-
-terminal = False
-
 
 ##Initialize # of frames in a batch
 frame_num = 500
@@ -175,10 +164,20 @@ print("Device created.")
 
 start = time.time()
 
-current_frame = 0
-current_batch = determine_batch_num(file_nums)
 
-while True: # Ongoing loop
+while True: # Ongoing infinite loop
+    current_batch = determine_batch_num(file_nums)
+    current_frame = 0
+    is_collecting = False
+    next_batch = False
+    
+    current_sub_batch = 0
+    sub_batches = [np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1))]
+
+    d.images = np.zeros((1,240,320,1))
+    d.actions = np.zeros((1,6))
+    d.mph = np.zeros((1))
+    print("Starting batch %s ..." % current_batch)
     while current_frame < frame_num: # Batch loop
         frame_start = time.time()
         keystates = get_keys(keystates) # Get keys that are currently pressed down, returns keystates dictionary
@@ -244,15 +243,15 @@ while True: # Ongoing loop
     # Perform this when batch collect is done
     print("Batch %s complete" % current_batch)
 
-    # Concatenate sub_batches onto d.images
+    # Finally concatenate sub_batches onto d.images
     for i in range(len(sub_batches)):
         d.images = np.concatenate((d.images, sub_batches[i]))
 
-    while True: # Wait for key command to save or not save
-        print("Press the 1 key (top of the keyboard) to save and continue on next batch...")
-        print("Alternatively, press the 2 key to delete current batch and retry current batch")
+    print("Press the 1 key (top of the keyboard) to save and continue onto next batch...")
+    print("Alternatively, press the 2 key to delete current batch and retry current batch")
+    # Wait for key press to save batch or not save
+    while True:
         next_batch = False
-        time.sleep(1)
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_1:
@@ -266,33 +265,3 @@ while True: # Ongoing loop
                     next_batch = True
         if next_batch == True:
             break
-    current_batch = determine_batch_num(file_nums)
-    current_frame = 0
-    is_collecting = False
-    next_batch = False
-    d.images = np.zeros((1,240,320,1))
-    d.actions = np.zeros((1,6))
-    d.mph = np.zeros((1))
-    #mixer.music.load('/home/mpcr/Desktop/rodrigo/deepcontrol/countdown.mp3')
-    print("Starting batch %s ..." % current_batch)
-
-elapsed_total = time.time()-start
-fps = frame_num/elapsed_total
-
-print("FPS: %s; Total time elapsed: %s seconds" % (fps,elapsed_total))
-
-##Print crop rectangles
-
-fig,ax = plt.subplots(1)
-
-ax.imshow(e)
-
-rect_mph = patches.Rectangle((x0_mph,y0_mph),delta_x_mph,delta_y_mph,linewidth=1,edgecolor='r',facecolor='none')
-
-ax.add_patch(rect_mph)
-
-plt.show()
-
-## stop camera and service
-cam.stop()
-pyrs.stop()
