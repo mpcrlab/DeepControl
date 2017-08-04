@@ -88,6 +88,7 @@ def determine_batch_num(file_nums):
 mixer.init()
 mixer.music.load('/home/mpcr/Desktop/rodrigo/deepcontrol/countdown.mp3')
 
+
 #Setting up OCR
 tools = pyocr.get_available_tools()
 if len(tools) == 0:
@@ -199,6 +200,7 @@ while True:
         cam.wait_for_frames() # This gets camera input stream as cam.color array
         # Create h5py file here, containing the numpy array and the array keystates_array
         #c = color.rgb2gray(cam.color)
+        f = cam.color
         c = np.mean(cam.color, 2)
         e = c
         c = resize(c, (240,320))
@@ -216,12 +218,17 @@ while True:
             d.mph = np.concatenate((d.mph, mph))
             current_frame += 1
 
-            if frame_num - current_frame == 170:
+            if frame_num - current_frame == 150:
                 mixer.music.play()
+                mixer.music.load('/home/mpcr/Desktop/rodrigo/deepcontrol/beep-07.mp3')
+            if frame_num - current_frame == 10:
+                mixer.music.play()
+                mixer.music.load('/home/mpcr/Desktop/rodrigo/deepcontrol/countdown.mp3')
         send_keys(board, keystates) #Send appropriate keystrokes from keystates through the arduino
         elapsed_frame = time.time()-frame_start
         print("Elapsed time: %s seconds" % elapsed_frame)
-
+    if keystates == 'terminal':
+        break
     # Perform this when batch collect is done
     print("Batch %s complete" % current_batch)
     # Wait for key command to save or not save
