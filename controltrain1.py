@@ -200,7 +200,6 @@ while True:
         cam.wait_for_frames() # This gets camera input stream as cam.color array
         # Create h5py file here, containing the numpy array and the array keystates_array
         #c = color.rgb2gray(cam.color)
-        f = cam.color
         c = np.mean(cam.color, 2)
         e = c
         c = resize(c, (240,320))
@@ -218,15 +217,14 @@ while True:
             d.mph = np.concatenate((d.mph, mph))
             current_frame += 1
 
-            if frame_num - current_frame == 150:
+            if frame_num - current_frame == 80:
                 mixer.music.play()
+            if frame_num - current_frame == 1:
                 mixer.music.load('/home/mpcr/Desktop/rodrigo/deepcontrol/beep-07.mp3')
-            if frame_num - current_frame == 10:
                 mixer.music.play()
-                mixer.music.load('/home/mpcr/Desktop/rodrigo/deepcontrol/countdown.mp3')
         send_keys(board, keystates) #Send appropriate keystrokes from keystates through the arduino
         elapsed_frame = time.time()-frame_start
-        print("Elapsed time: %s seconds" % elapsed_frame)
+        print("Frame time: %s seconds" % elapsed_frame)
     if keystates == 'terminal':
         break
     # Perform this when batch collect is done
@@ -240,10 +238,12 @@ while True:
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_1:
+                    batch_start_time = time.time()
                     next_batch = True
                     d.save('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset/dataset%s.h5' % current_batch)
                     file_nums.append(current_batch)
                     file_nums.sort()
+                    print("TIME TOOK TO SAVE BATCH: %s" % (time.time()-batch_start_time))
                 elif event.key == pygame.K_2:
                     next_batch = True
         if next_batch == True:
@@ -255,6 +255,7 @@ while True:
     d.images = np.zeros((1,240,320,1))
     d.actions = np.zeros((1,6))
     d.mph = np.zeros((1))
+    #mixer.music.load('/home/mpcr/Desktop/rodrigo/deepcontrol/countdown.mp3')
     print("Starting batch %s ..." % current_batch)
 
 elapsed_total = time.time()-start
