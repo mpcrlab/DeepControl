@@ -133,7 +133,7 @@ class Data():
 
 d = Data()
 
-sub_batches = [np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1))]
+sub_batches = [np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1))]
 current_sub_batch = 0
 
 
@@ -179,7 +179,7 @@ current_frame = 0
 current_batch = determine_batch_num(file_nums)
 
 while True: # Ongoing loop
-    while True: # Batch loop
+    while current_frame < frame_num: # Batch loop
         frame_start = time.time()
         keystates = get_keys(keystates) # Get keys that are currently pressed down, returns keystates dictionary
         if keystates == 'terminal':
@@ -219,8 +219,10 @@ while True: # Ongoing loop
         if is_collecting:
             print("Is collecting...")
 
+            if current_frame % 100 == 0:
+                current_sub_batch += 1
 
-            d.images = np.concatenate((d.images, c))
+            sub_batches[current_sub_batch] = np.concatenate((sub_batches[current_sub_batch], c))
             d.actions = np.concatenate((d.actions, keystates_array))
             d.mph = np.concatenate((d.mph, mph))
             current_frame += 1
@@ -241,6 +243,11 @@ while True: # Ongoing loop
         break
     # Perform this when batch collect is done
     print("Batch %s complete" % current_batch)
+
+    # Concatenate sub_batches onto d.images
+    for i in range(len(sub_batches)):
+        d.images = np.concatenate((d.images, sub_batches[i]))
+
     while True: # Wait for key command to save or not save
         print("Press the 1 key (top of the keyboard) to save and continue on next batch...")
         print("Alternatively, press the 2 key to delete current batch and retry current batch")
