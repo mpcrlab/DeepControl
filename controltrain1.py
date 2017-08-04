@@ -223,18 +223,21 @@ while True:
         print("Elapsed time: %s seconds" % elapsed_frame)
 
     # Perform this when batch collect is done
-    print("Batch %s complete and saving" % current_batch)
-    d.save('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset/dataset%s.h5' % current_batch)
-    file_nums.append(current_batch)
-    file_nums.sort()
-    # Wait for key command
+    print("Batch %s complete" % current_batch)
+    # Wait for key command to save or not save
     while True:
         time.sleep(0.5)
-        print("Saved. Press the 1 key (top of the keyboard) to continue on next batch...")
+        print("Press the 1 key (top of the keyboard) to save and continue on next batch...")
+        print("Alternatively, press the 2 key to delete current batch and retry current batch")
         next_batch = False
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_1:
+                    next_batch = True
+                    d.save('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset/dataset%s.h5' % current_batch)
+                    file_nums.append(current_batch)
+                    file_nums.sort()
+                elif event.key == pygame.K_2:
                     next_batch = True
         if next_batch == True:
             break
