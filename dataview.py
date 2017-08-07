@@ -9,20 +9,6 @@ from scipy.misc import imshow
 import time
 from os import walk
 
-def determine_batch_num(file_nums):
-    last_contiguous = 0
-    if len(file_nums) == 0:
-        return 0
-    if not file_nums[0] == 0:
-        return 0
-    for i in range(len(file_nums)):
-        if file_nums[i] - last_contiguous == 1:
-            last_contiguous += 1
-        elif file_nums[i] - last_contiguous > 1:
-            return last_contiguous + 1
-    else:
-        return file_nums[len(file_nums)-1] + 1
-
 def is_number(s):
     try:
         float(s)
