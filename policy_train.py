@@ -22,8 +22,6 @@ from networkswitch import *
 from sklearn.preprocessing import scale
 
 
-
-
 # prompt the user to choose the name of the saved model
 print('What filename do you want to save this model as?')
 m_save = raw_input('Rover Used_number of frames/stackinterval_other parameters  ')
@@ -35,7 +33,6 @@ model_num = np.int32(raw_input('Which model do you want to train (0 - 11)?'))
 # define useful variables
 os.chdir('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset')
 fnames = glob.glob('*.h5') # datasets to train on
-print(fnames)
 epochs = 5000 # number of training iterations
 batch_sz = 80  # training batch size
 errors = []  # variable to store the validation losses
@@ -47,7 +44,6 @@ num_stack = 3
 val_name = 'Run_2_l_lights_on.h5' # Dataset to use for validation
 num_iters = 0.
 num_classes = 3
-
 
 
 def add_noise(x, y):
@@ -120,11 +116,8 @@ writer2 = tf.summary.FileWriter('/tmp/tflearn_logs/train'+m_save+modelswitch[mod
                                model.session.graph)
 
 for i in range(epochs):
-
-    # pick random dataset for this epoch
-    n = np.random.randint(1, len(fnames)-1, 1)
-    filename = fnames[n[0]]
-
+    n = np.random.randint(1, len(fnames)-1, 1) # draw a random integer from 1 to # of files
+    filename = fnames[n[0]] # name file according to the random number index
     # skip validation set if chosen
     if filename == val_name:
         continue
