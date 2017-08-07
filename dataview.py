@@ -9,16 +9,59 @@ from scipy.misc import imshow
 import time
 from os import walk
 
+def determine_batch_num(file_nums):
+    last_contiguous = 0
+    if len(file_nums) == 0:
+        return 0
+    if not file_nums[0] == 0:
+        return 0
+    for i in range(len(file_nums)):
+        if file_nums[i] - last_contiguous == 1:
+            last_contiguous += 1
+        elif file_nums[i] - last_contiguous > 1:
+            return last_contiguous + 1
+    else:
+        return file_nums[len(file_nums)-1] + 1
+
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        pass
+    try:
+        import unicodedata
+        unicodedata.numeric(s)
+        return True
+    except (TypeError, ValueError):
+        pass
+    return False
+
+
 data_files = []
 
 for (dirpath, dirnames, filenames) in walk('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset'):
     data_files.extend(filenames)
     break
+
+for i in range(len(data_files)):
+    if is_number(data_files[i][8]):
+        data_files[i] = int(data_files[i][7] + data_files[i][8])
+    else:
+        data_files[i] = int(data_files[i][7])
+data_files.sort()
+
 print(data_files)
+
 h5f = []
 
 for i in range(len(data_files)):
-    h5f.append(h5py.File('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset/' + data_files[i]))
+    x = raw_input("Append %s? (Y/N): " % i)
+    if x == "Y" or x == "y":
+        h5f.append(h5py.File('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset/dataset' + str(data_files[i]) + '.h5'))
+    else:
+        pass
+
 
 image_set = np.asarray(h5f[0]['X'])
 action_array_set = np.asarray(h5f[0]['Y'])
@@ -28,6 +71,7 @@ mph = mph.astype(int)
 
 if len(h5f) > 1:
     for i in range(1,len(h5f)):
+        print(i)
         image_set = np.concatenate((image_set, np.asarray(h5f[i]['X'])))
         action_array_set = np.concatenate((action_array_set, np.asarray(h5f[i]['Y'])))
         action_array_set = action_array_set.astype(int)
@@ -65,9 +109,14 @@ def return_keys(keystates):
     return key_string
 
 for i in range(nframes):
+    i += 500
     ax.clear()
     print("frame " + str(i))
     ax.imshow(image_set[i,:,:])
     key_string = return_keys(action_array_set[i])
-    print(key_string)
+    print(mph[i])
     fig.canvas.draw()
+    if (i - 509 < 5 and i - 509 > -5):
+        time.sleep(2)
+#103, 204, 305
+# probably 406, 507, 610, 711, 812, 913, 1014, 1015, 1016,
