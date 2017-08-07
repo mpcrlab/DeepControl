@@ -6,7 +6,7 @@ Specifically, below is the configuration.
 
 ![configuration](http://imgur.com/gmTRUSn.jpg)
 
-First, we use imitation learning to help train an agent to play a DOS game called [Car and Driver](https://www.youtube.com/watch?v=kcSIBXA8nc4) by first collecting data, then training deep CNNs on it.
+First, an agent trains on human gameplaying data to achieve comparable performance through imitation learning. Next, we use the trained policy network as baseline performance, and implement q-learning to further augment its performance. Our implementation plays [Car and Driver](https://www.youtube.com/watch?v=kcSIBXA8nc4), which is a 1990's DOS racing game.
 
 ## Policy Network Data Collection
 Run controltrain1.py to collect data. This will store corresponding image frames, keypresses, and extracted car speed at every timestep into .h5 files in a "dataset" folder.
