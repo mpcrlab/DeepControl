@@ -9,7 +9,7 @@ Specifically, below is the configuration.
 First, an agent trains on human gameplaying data to achieve comparable performance through imitation learning. Next, we use the trained policy network as baseline performance, and implement q-learning to further augment its performance. Our implementation plays [Car and Driver](https://www.youtube.com/watch?v=kcSIBXA8nc4), which is a 1990's DOS racing game.
 
 ## Policy Network Data Collection
-Run controltrain1.py to collect data. This will store corresponding image frames, keypresses, and extracted car speed at every timestep into .h5 files in a "dataset" folder.
+Run controltrain1.py to collect data. This will store corresponding image frames, keypresses, and extracted car speed at every timestep into .h5 files in a "dataset" folder. It will store it in batches of 500 frames as one .h5 file, and to toggle data collection press the spacebar.
 
 ## Policy Network Training (Work in Progress)
 Run policy_train.py to train on data collected in the "dataset" folder.
