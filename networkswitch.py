@@ -369,7 +369,7 @@ def GoogLeNet1(network, scale=False):
 
     pool5_7_7 = avg_pool_2d(inception_5b_output, kernel_size=7, strides=1)
     pool5_7_7 = dropout(pool5_7_7, 0.4)
-    network = fully_connected(pool5_7_7, 3,activation='sigmoid')
+    network = fully_connected(pool5_7_7, output_dim,activation='sigmoid')
 
     return network
 
