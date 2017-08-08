@@ -23,8 +23,8 @@ from sklearn.preprocessing import scale
 
 
 # prompt the user to choose the name of the saved model
-print('What filename do you want to save this model as?')
-m_save = raw_input('Rover Used_number of frames/stackinterval_other parameters  ')
+m_save = raw_input('What filename do you want to save this model as?')
+
 
 # prompt the user for which model they want to train from networkswitch.py
 print(modelswitch)
@@ -35,8 +35,7 @@ os.chdir('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset')
 fnames = glob.glob('*.h5') # datasets to train on
 fnames.sort(key=lambda f: int(filter(str.isdigit, f)))
 epochs = 5000 # number of training iterations
-batch_sz = 80  # training batch size
-errors = []  # variable to store the validation losses
+batch_sz = 350  # training batch size
 test_num = 650  # Number of validation examples
 f_int = 5
 f_int2 = 15
@@ -119,7 +118,7 @@ writer2 = tf.summary.FileWriter('/tmp/tflearn_logs/train'+m_save+modelswitch[mod
                                model.session.graph)
 
 for i in range(epochs):
-    n = np.random.randint(1, len(fnames)-1, 1) # draw a random integer from 1 to # of files
+    n = np.random.randint(0, len(fnames)-1, 1) # draw a random integer from 1 to # of files
     filename = fnames[n[0]] # name file according to the random number index
     # skip validation set if chosen
     if filename == val_name:
