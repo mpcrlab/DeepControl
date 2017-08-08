@@ -11,5 +11,7 @@ First, an agent trains on human gameplaying data to achieve comparable performan
 ## Policy Network Data Collection
 Run controltrain1.py to collect data. This will store corresponding image frames, keypresses, and extracted car speed at every timestep into .h5 files in a "dataset" folder. It will store it in batches of 500 frames as one .h5 file, and to toggle data collection press the spacebar.
 
+Since the controltrain1.py script produces blank frames, run deleteblankframes.py to delete them to prepare for policy network training.
+
 ## Policy Network Training (Work in Progress)
 Run policy_train.py to train on data collected in the "dataset" folder.
