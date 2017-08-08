@@ -44,7 +44,7 @@ print(data_files)
 
 for set_num in range(len(data_files)):
     h5f = []
-    print("Deleting blank frames from dataset %s" % set_num)
+    print("Deleting blank frames from dataset %s" % data_files[set_num])
     h5f.append(h5py.File('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset/dataset' + str(data_files[set_num]) + '.h5'))
 
     image_set = np.asarray(h5f[0]['X'])
@@ -85,20 +85,19 @@ for set_num in range(len(data_files)):
 
     for i in range(nframes):
         ax.clear()
-        print(np.sum(image_set[i,:,:]))
         print("frame " + str(i))
+        print("frame sum: %s" % np.sum(image_set[i,:,:]))
         ax.imshow(image_set[i,:,:])
         if np.sum(image_set[i,:,:]) == 0.0:
             print(image_set.shape)
             image_set = np.delete(image_set, i, axis=0)
             print("Removed!, Shape: %s" % (str(image_set.shape)))
         key_string = return_keys(action_array_set[i])
-        print(action_array_set)
         fig.canvas.draw()
 
     print(image_set.shape)
     print(action_array_set.shape)
-    h5f = h5py.File('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset/fixed/dataset%s.h5' % set_num, 'w')
+    h5f = h5py.File('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset/fixed/dataset%s.h5' % data_files[set_num], 'w')
     h5f.create_dataset('X', data=image_set)
     h5f.create_dataset('Y', data=action_array_set)
     h5f.create_dataset('Z', data=mph)
