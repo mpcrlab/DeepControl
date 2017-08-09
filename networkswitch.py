@@ -17,7 +17,7 @@ from tflearn.layers.conv import densenet_block as denseblock
 #epochs = 350
 num_cols = 320
 num_rows = 130
-output_dim = 6
+output_dim = 20
 #num_channels = 1
 
 def scale(network):
