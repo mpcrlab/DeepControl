@@ -35,7 +35,7 @@ os.chdir('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset')
 fnames = glob.glob('*.h5') # datasets to train on
 fnames.sort(key=lambda f: int(filter(str.isdigit, f)))
 epochs = 5000 # number of training iterations
-batch_sz = 10  # training batch size
+batch_sz = 30  # training batch size
 test_num = 650  # Number of validation examples
 f_int = 5 # for framestack
 f_int2 = 15 # for framestack
@@ -43,7 +43,7 @@ val_accuracy = [] # variable to store the validation accuracy
 num_stack = 1
 val_name = 'dataset31.h5' # Dataset to use for validation
 num_iters = 0.
-num_classes = 18
+num_classes = 20
 binary = False # Binary crossentropy or not
 if binary:
     num_classes = 6
@@ -88,6 +88,8 @@ def batch_get(filename, batch_size):
     return X, Y
 
 def combo_to_onehot(keystates_array):
+    if keystates_array[1] == 1:
+        keystates_array[1] = 0
     keystates_array = str(keystates_array)
     combo_dict = {
     '[0 0 0 0 0 0]' : 0,
@@ -107,9 +109,11 @@ def combo_to_onehot(keystates_array):
     '[0 0 1 1 0 1]' : 14,
     '[0 0 1 0 1 1]' : 15,
     '[1 0 1 1 0 0]' : 16,
-    '[1 0 1 0 1 0]' : 17
+    '[1 0 1 0 1 0]' : 17,
+    '[1 0 1 1 1 0]' : 18,
+    '[1 0 1 1 0 1]' : 19
     }
-    one_hot = np.zeros((1,18))
+    one_hot = np.zeros((1,num_classes))
     i = combo_dict[keystates_array]
     one_hot[0][i] = 1
     return one_hot
@@ -151,6 +155,7 @@ writer2 = tf.summary.FileWriter('/tmp/tflearn_logs/train'+m_save+modelswitch[mod
                                model.session.graph)
 
 for i in range(epochs):
+    print(i)
     n = np.random.randint(0, len(fnames)-1, 1) # draw a random integer from 1 to # of files
     filename = fnames[n[0]] # name file according to the random number index
     # skip validation set if chosen
@@ -171,9 +176,11 @@ for i in range(epochs):
     #X, Y = add_noise(X, Y)
 
     # Convert labels to one-hot vectors
-    Z = np.zeros((10, 18))
+    Z = np.zeros((batch_sz, num_classes))
     if binary == False:
+        print(len(Y))
         for i in range(len(Y)):
+            print(i)
             Z[i] = combo_to_onehot(Y[i])
     Y = Z
 
