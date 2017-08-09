@@ -35,15 +35,18 @@ os.chdir('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset')
 fnames = glob.glob('*.h5') # datasets to train on
 fnames.sort(key=lambda f: int(filter(str.isdigit, f)))
 epochs = 5000 # number of training iterations
-batch_sz = 350  # training batch size
+batch_sz = 10  # training batch size
 test_num = 650  # Number of validation examples
-f_int = 5
-f_int2 = 15
+f_int = 5 # for framestack
+f_int2 = 15 # for framestack
 val_accuracy = [] # variable to store the validation accuracy
 num_stack = 1
 val_name = 'dataset31.h5' # Dataset to use for validation
 num_iters = 0.
-num_classes = 6
+num_classes = 18
+binary = False # Binary crossentropy or not
+if binary:
+    num_classes = 6
 
 
 def add_noise(x, y):
@@ -84,6 +87,33 @@ def batch_get(filename, batch_size):
     f.close()
     return X, Y
 
+def combo_to_onehot(keystates_array):
+    keystates_array = str(keystates_array)
+    combo_dict = {
+    '[0 0 0 0 0 0]' : 0,
+    '[0 0 0 1 0 0]' : 1,
+    '[0 0 0 0 1 0]' : 2,
+    '[0 0 0 0 0 1]' : 3,
+    '[1 0 0 0 0 0]' : 4,
+    '[0 0 1 0 0 0]' : 5,
+    '[0 0 1 1 0 0]' : 6,
+    '[0 0 1 0 1 0]' : 7,
+    '[0 0 1 0 0 1]' : 8,
+    '[1 0 1 0 0 0]' : 9,
+    '[0 0 0 1 0 1]' : 10,
+    '[1 0 0 1 0 0]' : 11,
+    '[0 0 0 0 1 1]' : 12,
+    '[1 0 0 0 1 0]' : 13,
+    '[0 0 1 1 0 1]' : 14,
+    '[0 0 1 0 1 1]' : 15,
+    '[1 0 1 1 0 0]' : 16,
+    '[1 0 1 0 1 0]' : 17
+    }
+    one_hot = np.zeros((1,18))
+    i = combo_dict[keystates_array]
+    one_hot[0][i] = 1
+    return one_hot
+
 
 # Validation set
 print('Validation Dataset: %s'%(val_name))
@@ -96,7 +126,10 @@ network = tf.placeholder(dtype=tf.float32, shape=[None, 240, 320, num_stack])
 # send the input placeholder to the specified network
 net_out = modelswitch[model_num](network)
 acc = tf.reduce_mean(tf.to_float(tf.equal(tf.argmax(net_out, 1), tf.argmax(labels, 1))))
-cost = binary_crossentropy(net_out, labels) # crossentropy loss function
+if binary:
+    cost = binary_crossentropy(net_out, labels) # crossentropy loss function
+else:
+    cost = categorical_crossentropy(net_out, labels) # crossentropy loss function
 
 # Tensorboard summaries
 tf.summary.scalar('Accuracy_', acc)
@@ -136,6 +169,14 @@ for i in range(epochs):
 
     # Data Augmentation
     #X, Y = add_noise(X, Y)
+
+    # Convert labels to one-hot vectors
+    Z = np.zeros((10, 18))
+    if binary == False:
+        for i in range(len(Y)):
+            Z[i] = combo_to_onehot(Y[i])
+    Y = Z
+
     # Training
     model.fit_batch(feed_dicts={network:X, labels:Y})
     train_acc, train_loss = model.session.run([acc, cost], feed_dict={network:X, labels:Y})
