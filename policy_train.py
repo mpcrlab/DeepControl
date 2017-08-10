@@ -178,9 +178,7 @@ for i in range(epochs):
     # Convert labels to one-hot vectors
     Z = np.zeros((batch_sz, num_classes))
     if binary == False:
-        print(len(Y))
         for i in range(len(Y)):
-            print(i)
             Z[i] = combo_to_onehot(Y[i])
     Y = Z
 
