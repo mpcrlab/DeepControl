@@ -127,7 +127,6 @@ def combo_to_onehot(keystates_array):
     one_hot[0][i] = 1
     return one_hot
 
-'''
 # Validation set
 print('Validation Dataset: %s'%(val_name))
 
@@ -224,8 +223,8 @@ while i < epochs:
 # Save model and acc/error curves
 os.chdir('/home/mpcr/Desktop/rodrigo/deepcontrol/saved_models')
 model.save(m_save+modelswitch[model_num].__name__)
-'''
+
 # Save model output throughout training
 os.chdir('/home/mpcr/Desktop/rodrigo/deepcontrol/policy_output')
-output_file = open(str(m_save+modelswitch[model_num].__name__) + '.txt' % randint(0,10000), 'w')
-output_file.write(str([]))
+output_file = open(str(m_save+modelswitch[model_num].__name__) + '.txt', 'w')
+output_file.write(str(out_log))
