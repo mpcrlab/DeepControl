@@ -20,6 +20,7 @@ import os
 import cv2
 from networkswitch import *
 import operator
+from random import randint
 from sklearn.preprocessing import scale
 
 
@@ -126,7 +127,7 @@ def combo_to_onehot(keystates_array):
     one_hot[0][i] = 1
     return one_hot
 
-
+'''
 # Validation set
 print('Validation Dataset: %s'%(val_name))
 
@@ -164,6 +165,7 @@ writer2 = tf.summary.FileWriter('/tmp/tflearn_logs/train'+m_save+modelswitch[mod
 
 out_log = []
 i = -1
+
 while i < epochs:
     i += 1
     print("Epoch: %s" % i)
@@ -220,7 +222,10 @@ while i < epochs:
         writer.add_summary(summary, i)
 
 # Save model and acc/error curves
+os.chdir('/home/mpcr/Desktop/rodrigo/deepcontrol/saved_models')
 model.save(m_save+modelswitch[model_num].__name__)
-
+'''
 # Save model output throughout training
-os.chdir('/home/mpcr/Desktop/rodrigo/deepcontrol')
+os.chdir('/home/mpcr/Desktop/rodrigo/deepcontrol/policy_output')
+output_file = open(str(m_save+modelswitch[model_num].__name__) + '.txt' % randint(0,10000), 'w')
+output_file.write(str([]))
