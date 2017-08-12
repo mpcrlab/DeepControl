@@ -19,5 +19,5 @@ Since the controltrain1.py script produces blank frames, run deleteblankframes.p
 #### 3. Run convertfloat.py
 Since controltrain1.py stores in float64 which is very heavy on RAM, use convertfloat.py to automatically convert all images in data files to uint8. This will result in no loss of information.
 
-## Policy Network Training (Work in Progress)
-Run policy_train.py to train on data collected in the "dataset" folder.
+## Policy Network Training
+Run policy_train.py to train on data collected in the "dataset" folder. 
