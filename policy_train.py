@@ -43,7 +43,7 @@ f_int = 5 # for framestack
 f_int2 = 15 # for framestack
 val_accuracy = [] # variable to store the validation accuracy
 num_stack = 1
-val_name = 'dataset30.h5' # Dataset to use for validation
+val_name = 'dataset31.h5' # Dataset to use for validation
 num_iters = 0.
 num_classes = 20
 binary = False # Binary crossentropy or not
@@ -185,7 +185,7 @@ while i < epochs:
         X, Y = create_framestack(X, Y, f_int, f_int2)
 
     # Data Augmentation
-    #X, Y = add_noise(X, Y)
+    X, Y = add_noise(X, Y)
 
     # Training
     model.fit_batch(feed_dicts={network:X, labels:Y})
