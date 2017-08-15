@@ -27,18 +27,18 @@ clock = pygame.time.Clock()
 
 class Pointer(object):
     def __init__(self,pointer_im,x=250,y=250):
-        self.pointer_im = pointer_im
-        self.pointer_im_rect = self.pointer_im.get_rect()
         self.x = x
         self.y = y
+        self.pointer_im = pointer_im
+        self.pointer_im_rect = self.pointer_im.get_rect()
     def rotate(self, angle):
         rot_pointer_im = pygame.transform.rotate(self.pointer_im, angle)
         rot_pointer_rect = rot_pointer_im.get_rect()
-        rot_pointer_rect.center = self.pointer_im_rect.center
+        rot_pointer_rect.center = (self.pointer_im_rect.center[0]+self.x, self.pointer_im_rect.center[0]+self.y)
 
         return rot_pointer_im, rot_pointer_rect
 
-pointer1 = Pointer(pygame.image.load("pointer.png").convert_alpha())
+pointer1 = Pointer(pygame.image.load("pointer.png").convert_alpha(), 200, 200)
 
 angle = 0
 angle_minmax = (0,90)
