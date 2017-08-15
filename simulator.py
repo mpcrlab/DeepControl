@@ -25,18 +25,20 @@ screen = pygame.display.set_mode(size)
 pygame.display.set_caption("Spinning Dial")
 clock = pygame.time.Clock()
 
-# There's:
-# pointer_im: loaded image
-# pointer_im_rect: rectangle of loaded image
-# rot_pointer_im: raw rotated image
-# rot_pointer_rect: rectangle where the raw rotated image has to fit to
+class Pointer(object):
+    def __init__(self,pointer_im,x=250,y=250):
+        self.pointer_im = pointer_im
+        self.pointer_im_rect = self.pointer_im.get_rect()
+        self.x = x
+        self.y = y
+    def rotate(self, angle):
+        rot_pointer_im = pygame.transform.rotate(self.pointer_im, angle)
+        rot_pointer_rect = rot_pointer_im.get_rect()
+        rot_pointer_rect.center = self.pointer_im_rect.center
 
-pointer_im = []
+        return rot_pointer_im, rot_pointer_rect
 
-pointer_im = pygame.image.load("pointer.png").convert_alpha()
-pointer_im_rect = pointer_im.get_rect()
-x_pointer,y_pointer = (250,250)
-
+pointer1 = Pointer(pygame.image.load("pointer.png").convert_alpha())
 
 angle = 0
 angle_minmax = (0,90)
@@ -56,9 +58,7 @@ while not done:
         print(angle)
 
     # Rotating image
-    rot_pointer_im = pygame.transform.rotate(pointer_im, angle)
-    rot_pointer_rect = rot_pointer_im.get_rect()
-    rot_pointer_rect.center = pointer_im_rect.center
+    rot_pointer_im, rot_pointer_rect = pointer1.rotate(angle)
 
     # Blit rotated image
     screen.fill(WHITE)
