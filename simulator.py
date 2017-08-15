@@ -40,8 +40,10 @@ class Pointer(object):
 
 pointer1 = Pointer(pygame.image.load("pointer.png").convert_alpha(), 200, 200)
 
+dial1 = pygame.image.load("dial.gif").convert_alpha()
+
 angle = 0
-angle_minmax = (0,90)
+angle_minmax = (-45,135)
 keystates={'up':False, 'down':False}
 done = False
 
@@ -50,10 +52,10 @@ while not done:
         keystates = get_keys(keystates)
         if event.type == pygame.QUIT:
             done = True
-    if keystates['up'] and angle != angle_minmax[1]:
+    if keystates['up'] and not angle > angle_minmax[1]:
         angle += 10
         print(angle)
-    if keystates['down'] and angle != angle_minmax[0]:
+    if keystates['down'] and not angle < angle_minmax[0]:
         angle -= 10
         print(angle)
 
@@ -62,6 +64,7 @@ while not done:
 
     # Blit rotated image
     screen.fill(WHITE)
+    screen.blit(dial1, (pointer1.x-50,pointer1.y-50))
     screen.blit(rot_pointer_im, rot_pointer_rect)
     pygame.display.flip()
     clock.tick(20)
