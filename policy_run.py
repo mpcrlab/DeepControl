@@ -5,7 +5,7 @@ import pygame.camera
 from pygame.locals import *
 from network_run import *
 from Pygame_UI import *
-from rover import Rover
+from controlfunctions import *
 import cv2
 import numpy as np
 import time
@@ -24,10 +24,8 @@ import tensorflow as tf
 tf.reset_default_graph()
 import os
 
-
-class RoverRun(Rover):
+class RoverRun():
     def __init__(self, framestack=False, film=False):
-        Rover.__init__(self)
         self.d = Data()
         self.userInterface = Pygame_UI()
         self.clock = pygame.time.Clock()
@@ -36,10 +34,10 @@ class RoverRun(Rover):
         self.quit = False
         self.paused = False
         self.angle = 0
-        self.treads = [0,0]
         self.timeStart = time.time()
         self.stack = framestack
         self.film = film
+        self.keystates = {'up':False, 'down':False, 'left':False, 'right':False, 'shift':False, 'space':False}
         if self.film is True:
             pygame.camera.init()
             camlist = pygame.camera.list_cameras()
@@ -63,13 +61,6 @@ class RoverRun(Rover):
 
     def film_run(self):
         return pygame.surfarray.array3d(pygame.transform.rotate(self.cam.get_image(), 90))
-
-    def getActiveKey(self):
-        key = None
-        for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
-                key = event.key
-        return key
 
     def process_video_from_rover(self, jpegbytes, timestamp_10msec):
         array_of_bytes = np.fromstring(jpegbytes, np.uint8)
@@ -96,7 +87,7 @@ class RoverRun(Rover):
             pass
 
         while not self.quit:
-       	    key = self.getActiveKey()
+       	    key = get_keys(self.keystates)
             if key:
                 key = chr(key)
 
@@ -149,11 +140,10 @@ class RoverRun(Rover):
         pygame.display.flip()
         self.userInterface.screen.fill((255,255,255))
 
-    elapsed_time = np.round(time.time() - start_time, 2)
-    print('This run lasted %.2f seconds'%(elapsed_time))
+    #elapsed_time = np.round(time.time() - start_time, 2)
+    #print('This run lasted %.2f seconds'%(elapsed_time))
 
-    self.set_wheel_treads(0,0)
+    #self.set_wheel_treads(0,0)
 
     pygame.quit()
     cv2.destroyAllWindows()
-    self.close()
