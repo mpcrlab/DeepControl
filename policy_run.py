@@ -38,26 +38,32 @@ class RoverRun():
         self.stack = framestack
         self.film = film
         self.keystates = {'up':False, 'down':False, 'left':False, 'right':False, 'shift':False, 'space':False}
+        print("BBBBBBBBBBBBBBBBBBBBBBBBB")
         if self.film is True:
             pygame.camera.init()
             camlist = pygame.camera.list_cameras()
+            print(camlist)
             if camlist:
                 self.cam = pygame.camera.Camera(camlist[0],(640,480))
                 self.cam.start()
+        print("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")
 
         if framestack is False:
-            self.network = input_data(shape=[None, 130, 320, 1])
+            self.network = input_data(shape=[None, 240, 320, 1])
+            print("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD")
         else:
-            self.network = input_data(shape=[None, 130, 320, len(framestack)+1])
-            self.framestack = np.zeros([1, 130, 320, self.FPS])
+            self.network = input_data(shape=[None, 240, 320, len(framestack)+1])
+            self.framestack = np.zeros([1, 240, 320, self.FPS])
             self.stack.append(0)
             self.stack.sort()
-
-	self.network = DNN1(self.network)
-	self.model = tflearn.DNN(self.network)
-	self.model.load('/home/TF_Rover/RoverData/Felix_3frames10-20_FeatureScaling_DNN1',
-		       weights_only=True)
-	self.run()
+        print("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE")
+        self.network = Alex1(self.network)
+        print("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF")
+        self.model = tflearn.DNN(self.network)
+        print("GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG")
+        self.model.load('/home/mpcr/Desktop/rodrigo/deepcontrol/saved_models/dAlex1', weights_only=True)#/home/TF_Rover/RoverData/Felix_3frames10-20_FeatureScaling_DNN1',weights_only=True)
+        print("HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH")
+        self.run()
 
     def film_run(self):
         return pygame.surfarray.array3d(pygame.transform.rotate(self.cam.get_image(), 90))
@@ -86,6 +92,7 @@ class RoverRun():
         while type(self.image) == type(None):
             pass
 
+        print("aoeu")
         while not self.quit:
        	    key = get_keys(self.keystates)
             if key:
@@ -98,13 +105,15 @@ class RoverRun():
 
 	    if self.film is True:
 	        a = self.film_run()
-	        cv2.imshow('webcam', a)
+	        #cv2.imshow('webcam', a)
 
 	    # grayscale and crop
-	    s=np.mean(s[None,110:,:,:], 3, keepdims=True)
+        #s=np.mean(s[None,110:,:,:], 3, keepdims=True)
+
+        print("aoeuaoeu")
 
         # Local Feature Scaling
-	    s = (s-np.mean(s))/(np.std(s)+1e-6)
+        s = (s-np.mean(s))/(np.std(s)+1e-6)
 
         # Framestack
         if self.stack is not False:
@@ -137,8 +146,8 @@ class RoverRun():
 	    #cv2.waitKey(1)
 
         self.clock.tick(self.FPS)
-        pygame.display.flip()
-        self.userInterface.screen.fill((255,255,255))
+        #pygame.display.flip()
+        #self.userInterface.screen.fill((255,255,255))
 
     #elapsed_time = np.round(time.time() - start_time, 2)
     #print('This run lasted %.2f seconds'%(elapsed_time))
@@ -147,3 +156,8 @@ class RoverRun():
 
     pygame.quit()
     cv2.destroyAllWindows()
+
+
+if __name__ == "__main__":
+    print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+    rover = RoverRun()
