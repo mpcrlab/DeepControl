@@ -45,8 +45,15 @@ class RoverRun():
 
         pyrs.start()
 
-
         self.cam = pyrs.Device(device_id = 0, streams = [pyrs.stream.ColorStream(fps = 30)])
+
+        if self.film is True:
+    	    pygame.camera.init()
+            camlist = pygame.camera.list_cameras()
+            print(camlist)
+    	    if camlist:
+    	        self.cam1 = pygame.camera.Camera(camlist[0],(640,480))
+    	        self.cam1.start()
 
         print("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")
 
@@ -92,9 +99,11 @@ class RoverRun():
         print("aoeu")
         start_time = time.time()
 
-        im = Image.fromarray(self.cam.color)
-        grayscaled_im = Image.fromarray(color.rgb2gray(self.cam.color))
-        self.image = grayscaled_im
+        c = np.mean(self.cam.color, 2)
+        c = resize(c, (240,320))
+        c = np.asarray(c)
+        c = c[None, :, :, None]
+        self.image = c
 
         while type(self.image) == type(None):
             print("self.image type None")
@@ -102,7 +111,6 @@ class RoverRun():
 
         print("aoeu")
         while not self.quit:
-            grayscaled_im = Image.fromarray(color.rgb2gray(self.cam.color))
             c = np.mean(self.cam.color, 2)
             c = resize(c, (240,320))
             c = np.asarray(c)
@@ -116,7 +124,7 @@ class RoverRun():
 
     	    if self.film is True:
     	        a = self.film_run()
-    	        #cv2.imshow('webcam', a)
+    	        cv2.imshow('webcam', a)
 
     	    # grayscale and crop
             #s=np.mean(s[None,110:,:,:], 3, keepdims=True)
@@ -138,14 +146,15 @@ class RoverRun():
             os.system('clear')
             print("Final prediction: " + str(self.angle))
             print("Predictions: " + str(output_predictions))
+            print(self.image)
             print(self.image.shape)
 
-            #cv2.imshow("RoverCam", scipy.misc.bytescale(np.mean(self.image[110:, ...], 2)))
-    	    #cv2.waitKey(1)
+            cv2.imshow("RoverCam", scipy.misc.bytescale(np.mean(self.image, 2)))
+    	    cv2.waitKey(1)
 
             self.clock.tick(self.FPS)
-            #pygame.display.flip()
-            #self.userInterface.screen.fill((255,255,255))
+            pygame.display.flip()
+            self.userInterface.screen.fill((255,255,255))
 
         elapsed_time = np.round(time.time() - start_time, 2)
         print('This run lasted %.2f seconds'%(elapsed_time))
@@ -159,3 +168,4 @@ class RoverRun():
 if __name__ == "__main__":
     print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
     rover = RoverRun()
+    
