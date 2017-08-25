@@ -1,4 +1,5 @@
 from __future__ import print_function
+import cv2
 import pygame
 from Data import *
 import pygame.camera
@@ -6,7 +7,9 @@ from pygame.locals import *
 from network_run import *
 from Pygame_UI import *
 from controlfunctions import *
-import cv2
+import pyrealsense as pyrs
+from skimage import color
+from skimage.transform import *
 import numpy as np
 import time
 import math
@@ -39,13 +42,12 @@ class RoverRun():
         self.film = film
         self.keystates = {'up':False, 'down':False, 'left':False, 'right':False, 'shift':False, 'space':False}
         print("BBBBBBBBBBBBBBBBBBBBBBBBB")
-        if self.film is True:
-            pygame.camera.init()
-            camlist = pygame.camera.list_cameras()
-            print(camlist)
-            if camlist:
-                self.cam = pygame.camera.Camera(camlist[0],(640,480))
-                self.cam.start()
+
+        pyrs.start()
+
+
+        self.cam = pyrs.Device(device_id = 0, streams = [pyrs.stream.ColorStream(fps = 30)])
+
         print("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")
 
         if framestack is False:
@@ -87,75 +89,71 @@ class RoverRun():
 
 
     def run(self):
+        print("aoeu")
         start_time = time.time()
 
+        im = Image.fromarray(self.cam.color)
+        grayscaled_im = Image.fromarray(color.rgb2gray(self.cam.color))
+        self.image = grayscaled_im
+
         while type(self.image) == type(None):
-            pass
+            print("self.image type None")
+            time.sleep(10000000)
 
         print("aoeu")
         while not self.quit:
+            grayscaled_im = Image.fromarray(color.rgb2gray(self.cam.color))
+            c = np.mean(self.cam.color, 2)
+            c = resize(c, (240,320))
+            c = np.asarray(c)
+            c = c[None, :, :, None]
+            self.image = c
+
        	    key = get_keys(self.keystates)
-            if key:
-                key = chr(key)
-
-            if key == 'z':
-                self.quit = True
-
-	    s=self.image
-
-	    if self.film is True:
-	        a = self.film_run()
-	        #cv2.imshow('webcam', a)
-
-	    # grayscale and crop
-        #s=np.mean(s[None,110:,:,:], 3, keepdims=True)
-
-        print("aoeuaoeu")
-
-        # Local Feature Scaling
-        s = (s-np.mean(s))/(np.std(s)+1e-6)
-
-        # Framestack
-        if self.stack is not False:
-            current = s
-            self.framestack = np.concatenate((current, self.framestack[:, :, :, 1:]), 3)
-            s = self.framestack[:, :, :, self.stack]
-
-	    # predict the correct steering angle from input
-        self.angle = self.model.predict(s)
-        self.angle = np.argmax(self.angle)
-
-        os.system('clear')
-        print(self.angle)
-        print(self.image.shape)
-
-        speed=0.5
-
-        if self.angle == 0:
-            self.treads = [-speed,speed]
-        elif self.angle == 1:
-           self.treads = [speed, speed]
-        elif self.angle == 2:
-           self.treads = [speed,-speed]
-
-        self.set_wheel_treads(self.treads[0],self.treads[1])
 
 
+    	    s=self.image
 
-        #cv2.imshow("RoverCam", scipy.misc.bytescale(np.mean(self.image[110:, ...], 2)))
-	    #cv2.waitKey(1)
+    	    if self.film is True:
+    	        a = self.film_run()
+    	        #cv2.imshow('webcam', a)
 
-        self.clock.tick(self.FPS)
-        #pygame.display.flip()
-        #self.userInterface.screen.fill((255,255,255))
+    	    # grayscale and crop
+            #s=np.mean(s[None,110:,:,:], 3, keepdims=True)
 
-    #elapsed_time = np.round(time.time() - start_time, 2)
-    #print('This run lasted %.2f seconds'%(elapsed_time))
+            # Local Feature Scaling
+            s = (s-np.mean(s))/(np.std(s)+1e-6)
 
-    #self.set_wheel_treads(0,0)
+            # Framestack
+            if self.stack is not False:
+                current = s
+                self.framestack = np.concatenate((current, self.framestack[:, :, :, 1:]), 3)
+                s = self.framestack[:, :, :, self.stack]
 
-    pygame.quit()
-    cv2.destroyAllWindows()
+    	    # predict the correct steering angle from input
+            self.angle = self.model.predict(s)
+            output_predictions = self.angle
+            self.angle = np.argmax(self.angle)
+
+            os.system('clear')
+            print("Final prediction: " + str(self.angle))
+            print("Predictions: " + str(output_predictions))
+            print(self.image.shape)
+
+            #cv2.imshow("RoverCam", scipy.misc.bytescale(np.mean(self.image[110:, ...], 2)))
+    	    #cv2.waitKey(1)
+
+            self.clock.tick(self.FPS)
+            #pygame.display.flip()
+            #self.userInterface.screen.fill((255,255,255))
+
+        elapsed_time = np.round(time.time() - start_time, 2)
+        print('This run lasted %.2f seconds'%(elapsed_time))
+
+        #self.set_wheel_treads(0,0)
+
+        pygame.quit()
+        cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
