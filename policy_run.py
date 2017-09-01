@@ -1,15 +1,17 @@
 from __future__ import print_function
+from Data import *
+from network_run import *
+from controlfunctions import *
+
 import cv2
 import pygame
-from Data import *
 import pygame.camera
 from pygame.locals import *
-from network_run import *
 from Pygame_UI import *
-from controlfunctions import *
 import pyrealsense as pyrs
 from skimage import color
 from skimage.transform import *
+from Arduino import Arduino
 import numpy as np
 import time
 import math
@@ -18,7 +20,6 @@ import h5py
 import tflearn
 import matplotlib.pyplot as plt
 import scipy.misc
-import math
 from tflearn.layers.core import input_data, dropout, fully_connected
 from tflearn.layers.conv import conv_2d, max_pool_2d
 from tflearn.layers.normalization import local_response_normalization
@@ -41,27 +42,66 @@ class RoverRun():
         self.stack = framestack
         self.film = film
         self.keystates = {'up':False, 'down':False, 'left':False, 'right':False, 'shift':False, 'space':False}
+        self.combo_dict = {
+        0 : {'up':False, 'down':False, 'left':False, 'right':False, 'shift':False, 'space':False},
+        1 : {'up':True, 'down':False, 'left':False, 'right':False, 'shift':False, 'space':False},
+        2 : {'up':False, 'down':True, 'left':False, 'right':False, 'shift':False, 'space':False},
+        3 : {'up':False, 'down':False, 'left':True, 'right':False, 'shift':False, 'space':False},
+        4 : {'up':False, 'down':False, 'left':False, 'right':True, 'shift':False, 'space':False},
+        5 : {'up':False, 'down':False, 'left':False, 'right':False, 'shift':True, 'space':False},
+        6 : {'up':True, 'down':False, 'left':False, 'right':False, 'shift':True, 'space':False},
+        7 : {'up':False, 'down':True, 'left':False, 'right':False, 'shift':True, 'space':False},
+        8 : {'up':False, 'down':False, 'left':True, 'right':False, 'shift':True, 'space':False},
+        9 : {'up':False, 'down':False, 'left':False, 'right':True, 'shift':True, 'space':False},
+        10 : {'up':True, 'down':False, 'left':True, 'right':False, 'shift':False, 'space':False},
+        11 : {'up':True, 'down':False, 'left':False, 'right':True, 'shift':False, 'space':False},
+        12 : {'up':False, 'down':True, 'left':True, 'right':False, 'shift':False, 'space':False},
+        13 : {'up':False, 'down':True, 'left':False, 'right':True, 'shift':False, 'space':False},
+        14 : {'up':True, 'down':False, 'left':True, 'right':False, 'shift':True, 'space':False},
+        15 : {'up':False, 'down':True, 'left':True, 'right':False, 'shift':True, 'space':False},
+        16 : {'up':True, 'down':False, 'left':False, 'right':True, 'shift':True, 'space':False},
+        17 : {'up':False, 'down':True, 'left':False, 'right':True, 'shift':True, 'space':False},
+        18 : {'up':True, 'down':True, 'left':False, 'right':True, 'shift':True, 'space':False},
+        19 : {'up':True, 'down':False, 'left':True, 'right':True, 'shift':True, 'space':False},
+        }
+
+
         print("BBBBBBBBBBBBBBBBBBBBBBBBB")
 
         #pyrs.start()
 
         #self.cam = pyrs.Device(device_id = 0, streams = [pyrs.stream.ColorStream(fps = 30)])
 
-        ### ADDING THIS IN FOR webcam
+        # Webcam (above is for Intel Realsense
         cv2.namedWindow("preview")
         global vc
         vc = cv2.VideoCapture(0)
 
-        if self.film is True:
-    	    pygame.camera.init()
-            camlist = pygame.camera.list_cameras()
-            print(camlist)
-    	    if camlist:
-    	        self.cam1 = pygame.camera.Camera(camlist[0],(640,480))
-    	        self.cam1.start()
-
         print("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")
 
+        print("Connecting to board...")
+        board = Arduino('9600')
+        print("Setting pin 13 to output...")
+        board.pinMode(13, "OUTPUT")
+
+        print("Setting pin 11 to output...")
+        board.pinMode(11, "OUTPUT")
+
+        print("Setting pin 9 to output...")
+        board.pinMode(9, "OUTPUT")
+
+        print("Setting pin 7 to output...")
+        board.pinMode(7, "OUTPUT")
+
+        print("Setting pin 5 to output...")
+        board.pinMode(5, "OUTPUT")
+
+        print("Setting pin 3 to output...")
+        board.pinMode(3, "OUTPUT")
+
+        print("Done configuring board")
+
+        # Setup network prediction
         if framestack is False:
             self.network = input_data(shape=[None, 240, 320, 1])
             print("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD")
@@ -88,16 +128,8 @@ class RoverRun():
         k = cv2.waitKey(5) & 0xFF
         return self.image
 
-
-
-    def eraseFrames(self, count):
-        size = len(self.d.angles)
-        if (size - count > 0):
-            print("--", "Deleting" , count, "seconds of frames!")
-            self.d.angles = self.d.angles[:size - count]
-            self.d.images = self.d.images[:size - count]
-        else:
-            print("Couldn't delete! List has less than", count, "frames!")
+    def onehot_to_combo(self, onehot):
+        return self.combo_dict[onehot]
 
 
     def run(self):
@@ -131,9 +163,6 @@ class RoverRun():
             c = c[None, :, :, None]
             self.image = c
 
-       	    key = get_keys(self.keystates)
-
-
     	    s=self.image
 
     	    if self.film is True:
@@ -157,10 +186,12 @@ class RoverRun():
             output_predictions = self.angle
             self.angle = np.argmax(self.angle)
 
+            keystates = onehot_to_combo(self.angle)
+
+            # print out feedback
             os.system('clear')
-            print("Final prediction: " + str(self.angle))
+            print("Final prediction: " + str(self.angle), keystates)
             print("Predictions: " + str(output_predictions))
-            print(self.image)
             print(self.image.shape)
             print(self.clock)
 
