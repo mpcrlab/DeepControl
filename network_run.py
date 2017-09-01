@@ -1,3 +1,5 @@
+import os
+os.setuid(1000) #Change UID to non-root (user)
 import tflearn
 import tensorflow as tf
 from tensorflow import image
