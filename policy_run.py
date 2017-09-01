@@ -43,9 +43,14 @@ class RoverRun():
         self.keystates = {'up':False, 'down':False, 'left':False, 'right':False, 'shift':False, 'space':False}
         print("BBBBBBBBBBBBBBBBBBBBBBBBB")
 
-        pyrs.start()
+        #pyrs.start()
 
-        self.cam = pyrs.Device(device_id = 0, streams = [pyrs.stream.ColorStream(fps = 30)])
+        #self.cam = pyrs.Device(device_id = 0, streams = [pyrs.stream.ColorStream(fps = 30)])
+
+        ### ADDING THIS IN FOR webcam
+        cv2.namedWindow("preview")
+        global vc
+        vc = cv2.VideoCapture(0)
 
         if self.film is True:
     	    pygame.camera.init()
@@ -98,8 +103,12 @@ class RoverRun():
     def run(self):
         print("aoeu")
         start_time = time.time()
-
-        c = np.mean(self.cam.color, 2)
+        rval, frame = vc.read()
+        cv2.imshow("preview", frame)
+        key = cv2.waitKey(20)
+        if key == 27: # Exit on ESCAPE
+            sys.exit()
+        c = np.mean(frame,2)#self.cam.color, 2)
         c = resize(c, (240,320))
         c = np.asarray(c)
         c = c[None, :, :, None]
@@ -111,7 +120,12 @@ class RoverRun():
 
         print("aoeu")
         while not self.quit:
-            c = np.mean(self.cam.color, 2)
+            rval, frame = vc.read()
+            cv2.imshow("preview", frame)
+            key = cv2.waitKey(20)
+            if key == 27: # Exit on ESCAPE
+                sys.exit()
+            c = np.mean(frame,2)#self.cam.color, 2)
             c = resize(c, (240,320))
             c = np.asarray(c)
             c = c[None, :, :, None]
@@ -148,6 +162,7 @@ class RoverRun():
             print("Predictions: " + str(output_predictions))
             print(self.image)
             print(self.image.shape)
+            print(self.clock)
 
             cv2.imshow("RoverCam", scipy.misc.bytescale(np.mean(self.image, 2)))
     	    cv2.waitKey(1)
@@ -168,4 +183,3 @@ class RoverRun():
 if __name__ == "__main__":
     print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
     rover = RoverRun()
-    
