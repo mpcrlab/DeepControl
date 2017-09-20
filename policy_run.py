@@ -1,7 +1,17 @@
 from __future__ import print_function
 from Data import *
+#import board_connect
+import os,sys
+print(sys.executable)
+#os.setgid(1000)
+#os.setuid(1000)
+#os.setegid(1000)
+#os.seteuid(1000)
+print(os.getgid(),os.getuid(),os.getegid(),os.geteuid())
+print(sys.executable)
 from network_run import *
 from controlfunctions import *
+
 
 import cv2
 import pygame
@@ -26,7 +36,7 @@ from tflearn.layers.normalization import local_response_normalization
 from tflearn.layers.estimator import regression
 import tensorflow as tf
 tf.reset_default_graph()
-import os
+import subprocess, getpass, shlex
 
 class RoverRun():
     def __init__(self, framestack=False, film=False):
@@ -79,8 +89,12 @@ class RoverRun():
 
         print("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")
 
+        # Switch to root (sudo)
         print("Connecting to board...")
-        board = Arduino('9600')
+        #board = subprocess.check_output(['sudo', 'python', 'board_connect.py'])
+        board = board_connect.board
+        print("Board string:" + board)
+        print("type: ", type(board))
         print("Setting pin 13 to output...")
         board.pinMode(13, "OUTPUT")
 
@@ -100,6 +114,7 @@ class RoverRun():
         board.pinMode(3, "OUTPUT")
 
         print("Done configuring board")
+
 
         # Setup network prediction
         if framestack is False:
