@@ -1,17 +1,8 @@
 from __future__ import print_function
 from Data import *
-#import board_connect
 import os,sys
-print(sys.executable)
-#os.setgid(1000)
-#os.setuid(1000)
-#os.setegid(1000)
-#os.seteuid(1000)
-print(os.getgid(),os.getuid(),os.getegid(),os.geteuid())
-print(sys.executable)
 from network_run import *
 from controlfunctions import *
-
 
 import cv2
 import pygame
@@ -24,7 +15,7 @@ from skimage.transform import *
 from Arduino import Arduino
 import numpy as np
 import time
-import math
+import math, random
 import numpy as np
 import h5py
 import tflearn
@@ -36,12 +27,11 @@ from tflearn.layers.normalization import local_response_normalization
 from tflearn.layers.estimator import regression
 import tensorflow as tf
 tf.reset_default_graph()
-import subprocess, getpass, shlex
 
 class RoverRun():
     def __init__(self, framestack=False, film=False):
         self.d = Data()
-        self.userInterface = Pygame_UI()
+        #self.userInterface = Pygame_UI()
         self.clock = pygame.time.Clock()
         self.FPS = 30
         self.image = None
@@ -82,7 +72,7 @@ class RoverRun():
 
         #self.cam = pyrs.Device(device_id = 0, streams = [pyrs.stream.ColorStream(fps = 30)])
 
-        # Webcam (above is for Intel Realsense
+        # Webcam (above is for Intel Realsense)
         cv2.namedWindow("preview")
         global vc
         vc = cv2.VideoCapture(0)
@@ -92,8 +82,8 @@ class RoverRun():
         # Switch to root (sudo)
         print("Connecting to board...")
         #board = subprocess.check_output(['sudo', 'python', 'board_connect.py'])
-        board = board_connect.board
-        print("Board string:" + board)
+        global board
+        board = Arduino('9600')
         print("type: ", type(board))
         print("Setting pin 13 to output...")
         board.pinMode(13, "OUTPUT")
@@ -201,7 +191,8 @@ class RoverRun():
             output_predictions = self.angle
             self.angle = np.argmax(self.angle)
 
-            keystates = onehot_to_combo(self.angle)
+            keystates = self.onehot_to_combo(self.angle)
+            random_keystates = self.onehot_to_combo(random.randint(0,19))
 
             # print out feedback
             os.system('clear')
@@ -210,19 +201,20 @@ class RoverRun():
             print(self.image.shape)
             print(self.clock)
 
-            cv2.imshow("RoverCam", scipy.misc.bytescale(np.mean(self.image, 2)))
-    	    cv2.waitKey(1)
+
+            # send predicted keystate to the arduino
+            send_keys(board, keystates)
 
             self.clock.tick(self.FPS)
-            pygame.display.flip()
-            self.userInterface.screen.fill((255,255,255))
+            #pygame.display.flip()
+            #self.userInterface.screen.fill((255,255,255))
 
         elapsed_time = np.round(time.time() - start_time, 2)
         print('This run lasted %.2f seconds'%(elapsed_time))
 
         #self.set_wheel_treads(0,0)
 
-        pygame.quit()
+        #pygame.quit()
         cv2.destroyAllWindows()
 
 
