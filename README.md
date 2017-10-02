@@ -21,3 +21,6 @@ Since controltrain1.py stores in float64 which is very heavy on RAM, use convert
 
 ## Policy Network Training
 Run policy_train.py to train on data collected in the "dataset" folder. 
+
+## Policy Network Run (Real-time testing)
+Run policy_run.py to run on the trained neural network and control the game real-time.
