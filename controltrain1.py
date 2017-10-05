@@ -214,11 +214,19 @@ while True: # Ongoing infinite loop
         keystates_array = keystates_array[:,None] # Adds an extra dimension
         keystates_array = np.transpose(keystates_array) # Transposes array
 
+
         #Manipulate camera frame
         c = np.mean(frame,2)
         c = resize(c, (240,320))
         c = np.asarray(c)
         c = c[None, :, :, None]
+
+
+        # Extract MPH from camera input stream
+        im = Image.fromarray(cam.color)
+        cropped_mph_im = im.crop(crop_mph)
+        mph = np.full((1),curve_to_mph(cropped_mph_im, br_thresh))
+
 
         if is_collecting:
             print("Is collecting...")
@@ -232,6 +240,7 @@ while True: # Ongoing infinite loop
             current_frame += 1
             if frame_num - current_frame == 1:
                 mixer.music.play()
+
 
         send_keys(board, keystates) #Send appropriate keystrokes from keystates through the arduino
 
