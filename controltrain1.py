@@ -7,6 +7,7 @@ import io, os
 from os import walk
 import h5py
 
+import cv2
 from skimage import color
 from skimage.transform import *
 from PIL import Image, ImageFont, ImageDraw, ImageOps, ImageStat
@@ -86,6 +87,8 @@ def determine_batch_num(file_nums):
 
 # Load audio countdown cue
 mixer.init()
+mixer.music.load('/home/mpcr/Desktop/rodrigo/deepcontrol/beep-07.mp3')
+
 
 #Setting up OCR
 tools = pyocr.get_available_tools()
@@ -152,6 +155,7 @@ frame_num = 500
 ##-------------------------------------------------------##
 ##                     Starting                          ##
 ##-------------------------------------------------------##
+'''
 print("Starting pyrs...")
 ## start the service - also available as context manager
 pyrs.start()
@@ -161,6 +165,18 @@ print("Creating device...")
 ## create a device from device id and streams of interest
 cam = pyrs.Device(device_id = 0, streams = [pyrs.stream.ColorStream(fps = 60)])
 print("Device created.")
+'''
+# Webcam (above is for Intel Realsense)
+cv2.namedWindow("preview")
+global vc
+vc = cv2.VideoCapture(0)
+
+rval, frame = vc.read()
+cv2.imshow("preview", frame)
+c = np.mean(frame,2)#self.cam.color, 2)
+c = resize(c, (240,320))
+c = np.asarray(c)
+c = c[None, :, :, None]
 
 start = time.time()
 
@@ -170,7 +186,7 @@ while True: # Ongoing infinite loop
     current_frame = 0
     is_collecting = False
     next_batch = False
-    
+
     current_sub_batch = 0
     sub_batches = [np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1))]
 
@@ -180,12 +196,22 @@ while True: # Ongoing infinite loop
     print("Starting batch %s ..." % current_batch)
     while current_frame < frame_num: # Batch loop
         frame_start = time.time()
+
         keystates = get_keys(keystates) # Get keys that are currently pressed down, returns keystates dictionary
+
+        #Get camera input stream
+        rval, frame = vc.read()
+        cv2.imshow("preview", frame)
+        key = cv2.waitKey(20)
+        if key == 27: # Exit on ESCAPE
+            sys.exit()
+
         if keystates == 'terminal':
             break
         # Data collection on/off switch
         if keystates['space'] and not last_frame_space:
             # Turn data collection on/off
+            mixer.music.play()
             is_collecting = not is_collecting
             if is_collecting:
                 print("IS NOW COLLECTING DATA")
@@ -199,7 +225,7 @@ while True: # Ongoing infinite loop
         keystates_array = keystates_array[:,None] # Adds an extra dimension
         keystates_array = np.transpose(keystates_array) # Transposes array
 
-
+        '''
         # Get camera input stream and manipulate it
         cam.wait_for_frames() # This gets camera input stream as cam.color array
         c = np.mean(cam.color, 2)
@@ -207,12 +233,19 @@ while True: # Ongoing infinite loop
         c = resize(c, (240,320))
         c = np.asarray(c)
         c = c[None, :, :, None]
+        '''
+
+        #Manipulate camera frame
+        c = np.mean(frame,2)
+        c = resize(c, (240,320))
+        c = np.asarray(c)
+        c = c[None, :, :, None]
 
 
         # Extract MPH from camera input stream
-        im = Image.fromarray(cam.color)
-        cropped_mph_im = im.crop(crop_mph)
-        mph = np.full((1),curve_to_mph(cropped_mph_im, br_thresh))
+        #im = Image.fromarray(cam.color)
+        #cropped_mph_im = im.crop(crop_mph)
+        #mph = np.full((1),curve_to_mph(cropped_mph_im, br_thresh))
 
 
         if is_collecting:
@@ -225,16 +258,11 @@ while True: # Ongoing infinite loop
             d.actions = np.concatenate((d.actions, keystates_array))
             d.mph = np.concatenate((d.mph, mph))
             current_frame += 1
-
-            if frame_num - current_frame == 80:
-                mixer.music.play()
             if frame_num - current_frame == 1:
-                mixer.music.load('/home/mpcr/Desktop/rodrigo/deepcontrol/beep-07.mp3')
                 mixer.music.play()
 
 
         send_keys(board, keystates) #Send appropriate keystrokes from keystates through the arduino
-
 
         elapsed_frame = time.time()-frame_start
         print("Frame time: %s seconds" % elapsed_frame)
