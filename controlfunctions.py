@@ -11,7 +11,7 @@ K_LSHIFT = 304
 K_SPACE = 32
 
 def is_off_road(txt):
-    if len(txt) > 10:
+    if len(txt) > 30:
         return True
     else:
         return False
