@@ -33,7 +33,8 @@ print(modelswitch)
 model_num = np.int32(raw_input('Which model do you want to train (0 - 11)?'))
 
 # define useful variables
-os.chdir('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset')
+directory = '/home/mpcr/Desktop/rodrigo/deepcontrol/dataset'
+os.chdir(directory)
 fnames = glob.glob('*.h5') # datasets to train on
 fnames.sort(key=lambda f: int(filter(str.isdigit, f)))
 epochs = 5000 # number of training iterations
@@ -78,6 +79,7 @@ def batch_get(filename, batch_size):
     f = h5py.File(filename, 'r')
     X = np.asarray(f['X'])
     Y = np.int32(f['Y'])
+
     #Y = np.zeros([batch_sz, num_classes])
     rand = np.random.randint(f_int2, X.shape[0], batch_sz)
     Y = Y[rand,:]
@@ -173,7 +175,7 @@ while i < epochs:
     # skip validation set if chosen
     if filename == val_name:
         continue
-
+    print(filename)
     # load the chosen data file
     X, Y = batch_get(filename, batch_sz)
 
@@ -202,6 +204,17 @@ while i < epochs:
 
     train_summary = model.session.run(merged, feed_dict={network:X, labels:Y})
     writer2.add_summary(train_summary, i)
+
+    if i%200 == 0:
+        # Save model and acc/error curves
+        os.chdir('/home/mpcr/Desktop/rodrigo/deepcontrol/saved_models')
+        model.save(m_save+modelswitch[model_num].__name__)
+
+        # Save model output throughout training
+        os.chdir('/home/mpcr/Desktop/rodrigo/deepcontrol/policy_output')
+        output_file = open(str(m_save+modelswitch[model_num].__name__) + '.txt', 'w')
+        output_file.write(str(out_log))
+        os.chdir(directory)
 
     if i%50 == 0:
         print("Validating")
