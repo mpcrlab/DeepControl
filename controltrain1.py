@@ -221,9 +221,8 @@ while True: # Ongoing infinite loop
         c = np.asarray(c)
         c = c[None, :, :, None]
 
-
         # Extract MPH from camera input stream
-        im = Image.fromarray(cam.color)
+        im = Image.fromarray(frame)
         cropped_mph_im = im.crop(crop_mph)
         mph = np.full((1),curve_to_mph(cropped_mph_im, br_thresh))
 
