@@ -9,6 +9,8 @@ from scipy.misc import imshow
 import time
 from os import walk
 
+directory = '/home/mpcr/Desktop/rodrigo/deepcontrol/dataset/new/fixed'
+
 def is_number(s):
     try:
         float(s)
@@ -26,7 +28,7 @@ def is_number(s):
 
 data_files = []
 
-for (dirpath, dirnames, filenames) in walk('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset'):
+for (dirpath, dirnames, filenames) in walk(directory):
     data_files.extend(filenames)
     break
 
@@ -44,21 +46,28 @@ h5f = []
 for i in range(len(data_files)):
     x = raw_input("Append %s? (Y/N): " % i)
     if x == "Y" or x == "y":
-        h5f.append(h5py.File('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset/dataset' + str(data_files[i]) + '.h5'))
+        h5f.append(h5py.File(directory + '/dataset' + str(data_files[i]) + '.h5'))
+    elif x == "s":
+        break
     else:
         pass
 
 
+print(h5f[0]['X'].shape)
 image_set = np.asarray(h5f[0]['X'])
+image_set = image_set[:,:,:,None]
 action_array_set = np.asarray(h5f[0]['Y'])
 action_array_set = action_array_set.astype(int)
 mph = np.asarray(h5f[0]['Z'])
 mph = mph.astype(int)
 
+print(image_set[0])
+
 if len(h5f) > 1:
     for i in range(1,len(h5f)):
-        print(i)
-        image_set = np.concatenate((image_set, np.asarray(h5f[i]['X'])))
+        print(np.asarray(h5f[i]['X'])[:,:,:,None].shape)
+        print(image_set.shape)
+        image_set = np.concatenate((image_set, np.asarray(h5f[i]['X'])[:,:,:,None]))
         action_array_set = np.concatenate((action_array_set, np.asarray(h5f[i]['Y'])))
         action_array_set = action_array_set.astype(int)
         mph = np.concatenate((mph, h5f[i]['Z']))
@@ -95,14 +104,10 @@ def return_keys(keystates):
     return key_string
 
 for i in range(nframes):
-    i += 500
+    #print("Type %s" % type(image_set[i,5,5]))
     ax.clear()
     print("frame " + str(i))
     ax.imshow(image_set[i,:,:])
     key_string = return_keys(action_array_set[i])
-    print(mph[i])
+    print(action_array_set)
     fig.canvas.draw()
-    if (i - 509 < 5 and i - 509 > -5):
-        time.sleep(2)
-#103, 204, 305
-# probably 406, 507, 610, 711, 812, 913, 1014, 1015, 1016,
