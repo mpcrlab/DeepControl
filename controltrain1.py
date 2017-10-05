@@ -155,18 +155,7 @@ frame_num = 500
 ##-------------------------------------------------------##
 ##                     Starting                          ##
 ##-------------------------------------------------------##
-'''
-print("Starting pyrs...")
-## start the service - also available as context manager
-pyrs.start()
-print("pyrs Started")
-
-print("Creating device...")
-## create a device from device id and streams of interest
-cam = pyrs.Device(device_id = 0, streams = [pyrs.stream.ColorStream(fps = 60)])
-print("Device created.")
-'''
-# Webcam (above is for Intel Realsense)
+# Webcam setup
 cv2.namedWindow("preview")
 global vc
 vc = cv2.VideoCapture(0)
@@ -225,28 +214,11 @@ while True: # Ongoing infinite loop
         keystates_array = keystates_array[:,None] # Adds an extra dimension
         keystates_array = np.transpose(keystates_array) # Transposes array
 
-        '''
-        # Get camera input stream and manipulate it
-        cam.wait_for_frames() # This gets camera input stream as cam.color array
-        c = np.mean(cam.color, 2)
-        e = c
-        c = resize(c, (240,320))
-        c = np.asarray(c)
-        c = c[None, :, :, None]
-        '''
-
         #Manipulate camera frame
         c = np.mean(frame,2)
         c = resize(c, (240,320))
         c = np.asarray(c)
         c = c[None, :, :, None]
-
-
-        # Extract MPH from camera input stream
-        #im = Image.fromarray(cam.color)
-        #cropped_mph_im = im.crop(crop_mph)
-        #mph = np.full((1),curve_to_mph(cropped_mph_im, br_thresh))
-
 
         if is_collecting:
             print("Is collecting...")
@@ -260,7 +232,6 @@ while True: # Ongoing infinite loop
             current_frame += 1
             if frame_num - current_frame == 1:
                 mixer.music.play()
-
 
         send_keys(board, keystates) #Send appropriate keystrokes from keystates through the arduino
 
