@@ -12,7 +12,7 @@ from scipy.misc import imshow
 import time
 from os import walk
 
-directory = '/home/mpcr/Desktop/rodrigo/deepcontrol/septdataset'
+directory = '/home/mpcr/Desktop/rodrigo/deepcontrol/dataset/new'
 
 
 def is_number(s):
@@ -85,19 +85,19 @@ for set_num in range(len(data_files)):
                     key_string += "left-"
         return key_string
     print(image_set.shape)
-    '''
-    for i in range(nframes):
+
+    for i in range(nframes-1):
         ax.clear()
-        print("frame " + str(i))
+        print("frame " + str(i) + " out of " + str(nframes))
         print("frame sum: %s" % np.sum(image_set[i,:,:]))
-        ax.imshow(image_set[i,:,:])
-        if np.sum(image_set[i,:,:]) == 0.0:
+        #ax.imshow(image_set[i,:,:])
+        if np.sum(image_set[i,:,:]) < 10:
             print(image_set.shape)
             image_set = np.delete(image_set, i, axis=0)
             print("Removed!, Shape: %s" % (str(image_set.shape)))
         key_string = return_keys(action_array_set[i])
         fig.canvas.draw()
-    '''
+
     print(image_set.shape)
     print(action_array_set.shape)
     h5f = h5py.File(directory + '/fixed/dataset%s.h5' % data_files[set_num], 'w')
