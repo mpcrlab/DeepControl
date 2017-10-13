@@ -23,6 +23,8 @@ import numpy as np
 # Initialization #
 ##################
 
+subject_id = raw_input("Please enter your first name and last initial here and press enter: ")
+
 print("Connecting to board...")
 board = Arduino('9600')
 print("Setting pin 13 to output...")
@@ -60,13 +62,13 @@ keystates={'up':False, 'down':False, 'left':False, 'right':False, 'shift':False,
 # Creating "dataset" directory and cd-ing to it
 print("Creating 'dataset' folder")
 os.setuid(1000) #Changing permissions to user in order to create a folder that is non-root
-if not os.path.exists('dataset'):
-    os.makedirs('dataset')
+if not os.path.exists('/home/mpcr/Desktop/rodrigo/deepcontrol/study_dataset/' + subject_id):
+    os.makedirs('/home/mpcr/Desktop/rodrigo/deepcontrol/study_dataset/' + subject_id)
 print("'dataset' folder created")
 
 # Detecting already saved data files and saving version numbers to a list
 file_nums = []
-for (dirpath, dirnames, filenames) in walk('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset'):
+for (dirpath, dirnames, filenames) in walk('/home/mpcr/Desktop/rodrigo/deepcontrol/study_dataset/' + subject_id):
     for i in range(len(filenames)):
         file_nums.append(int(filenames[i][7]))
 
@@ -169,10 +171,11 @@ c = c[None, :, :, None]
 
 start = time.time()
 
+current_frame = 0
 
 while True: # Ongoing infinite loop
     current_batch = determine_batch_num(file_nums)
-    current_frame = 0
+    batch_frame = 0
     is_collecting = False
     next_batch = False
 
@@ -182,9 +185,11 @@ while True: # Ongoing infinite loop
     d.images = np.zeros((1,240,320,1))
     d.actions = np.zeros((1,6))
     d.mph = np.zeros((1))
-    print("Starting batch %s ..." % current_batch)
-    while current_frame < frame_num: # Batch loop
+    os.system('clear')
+    print("Click on the small black window on the top left corner. Press spacebar once to begin collecting your driving data.")
+    while batch_frame < frame_num: # Batch loop
         frame_start = time.time()
+        current_frame += 1
 
         keystates = get_keys(keystates) # Get keys that are currently pressed down, returns keystates dictionary
 
@@ -203,9 +208,13 @@ while True: # Ongoing infinite loop
             mixer.music.play()
             is_collecting = not is_collecting
             if is_collecting:
-                print("IS NOW COLLECTING DATA")
+                print("NOW COLLECTING DATA")
             else:
                 print("STOPPED COLLECTING DATA")
+                # print(sub_batches,current_sub_batch)
+                current_sub_batch = 0
+                sub_batches = [np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1))]
+                batch_frame = 0
         last_frame_space = keystates['space']
 
         # Manipulate keystates into a 0 and 1 array
@@ -228,23 +237,22 @@ while True: # Ongoing infinite loop
 
 
         if is_collecting:
-            print("Is collecting...")
+            print("Frames collected for this batch: " + str(batch_frame))
 
-            if current_frame % 100 == 0:
+            if batch_frame % 100 == 0:
                 current_sub_batch += 1
 
             sub_batches[current_sub_batch] = np.concatenate((sub_batches[current_sub_batch], c))
             d.actions = np.concatenate((d.actions, keystates_array))
             d.mph = np.concatenate((d.mph, mph))
-            current_frame += 1
-            if frame_num - current_frame == 1:
+            batch_frame += 1
+            if frame_num - batch_frame == 1:
                 mixer.music.play()
 
 
         send_keys(board, keystates) #Send appropriate keystrokes from keystates through the arduino
 
         elapsed_frame = time.time()-frame_start
-        print("Frame time: %s seconds" % elapsed_frame)
     if keystates == 'terminal':
         break
     # Perform this when batch collect is done
@@ -254,21 +262,21 @@ while True: # Ongoing infinite loop
     for i in range(len(sub_batches)):
         d.images = np.concatenate((d.images, sub_batches[i]))
 
-    print("Press the 1 key (top of the keyboard) to save and continue onto next batch...")
-    print("Alternatively, press the 2 key to delete current batch and retry current batch")
+    print("Messed up: Press Z key to delete current batch. Then press the spacebar to restart collecting data.")
+    print("Press the S key to to save. Then press the spacebar to start the next batch.")
     # Wait for key press to save batch or not save
     while True:
         next_batch = False
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_1:
+                if event.key == pygame.K_s:
                     batch_start_time = time.time()
                     next_batch = True
-                    d.save('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset/dataset%s.h5' % current_batch)
+                    d.save('/home/mpcr/Desktop/rodrigo/deepcontrol/study_dataset/' + subject_id + '/dataset%s.h5' % current_batch)
                     file_nums.append(current_batch)
                     file_nums.sort()
                     print("TIME TOOK TO SAVE BATCH: %s" % (time.time()-batch_start_time))
-                elif event.key == pygame.K_2:
+                elif event.key == pygame.K_z:
                     next_batch = True
         if next_batch == True:
             break
