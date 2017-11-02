@@ -11,8 +11,9 @@ import matplotlib.cbook as cbook
 from scipy.misc import imshow
 import time
 from os import walk
+import sys
 
-directory = '/home/mpcr/Desktop/rodrigo/deepcontrol/dataset/new'
+directory = '/home/mpcr/Desktop/rodrigo/deepcontrol/datasettemp'
 
 
 def is_number(s):
@@ -37,13 +38,37 @@ for (dirpath, dirnames, filenames) in walk(directory):
     break
 # Extract the dataset numbers
 for i in range(len(data_files)):
-    if is_number(data_files[i][8]):
+    if is_number(data_files[i][9]):
+        data_files[i] = int(data_files[i][7] + data_files[i][8] + data_files[i][9])
+    elif is_number(data_files[i][8]):
         data_files[i] = int(data_files[i][7] + data_files[i][8])
     else:
         data_files[i] = int(data_files[i][7])
+
 data_files.sort()
 
 print(data_files)
+
+if raw_input("Are you sure you want to continue? ") != "yes":
+    sys.exit()
+
+def return_keys(keystates):
+    key_string = ""
+    for i in range(len(keystates)):
+        if keystates[i] == 1.:
+            if i == 0:
+                key_string += "right-"
+            if i == 1:
+                key_string += "down-"
+            if i == 2:
+                key_string += "shift-"
+            if i == 3:
+                key_string += "up-"
+            if i == 4:
+                key_string += "down-"
+            if i == 5:
+                key_string += "left-"
+    return key_string
 
 for set_num in range(len(data_files)):
     h5f = []
@@ -58,45 +83,19 @@ for set_num in range(len(data_files)):
 
     nframes = action_array_set.shape[0]
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    plt.ion()
-
-    fig.show()
-    fig.canvas.draw()
 
     image_set = np.squeeze(image_set)
 
-    def return_keys(keystates):
-        key_string = ""
-        for i in range(len(keystates)):
-            if keystates[i] == 1.:
-                if i == 0:
-                    key_string += "right-"
-                if i == 1:
-                    key_string += "down-"
-                if i == 2:
-                    key_string += "shift-"
-                if i == 3:
-                    key_string += "up-"
-                if i == 4:
-                    key_string += "down-"
-                if i == 5:
-                    key_string += "left-"
-        return key_string
     print(image_set.shape)
 
     for i in range(nframes-1):
-        ax.clear()
         print("frame " + str(i) + " out of " + str(nframes))
         print("frame sum: %s" % np.sum(image_set[i,:,:]))
-        #ax.imshow(image_set[i,:,:])
         if np.sum(image_set[i,:,:]) < 10:
             print(image_set.shape)
             image_set = np.delete(image_set, i, axis=0)
             print("Removed!, Shape: %s" % (str(image_set.shape)))
         key_string = return_keys(action_array_set[i])
-        fig.canvas.draw()
 
     print(image_set.shape)
     print(action_array_set.shape)
