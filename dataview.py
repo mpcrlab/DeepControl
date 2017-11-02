@@ -9,7 +9,7 @@ from scipy.misc import imshow
 import time
 from os import walk
 
-directory = '/home/mpcr/Desktop/rodrigo/deepcontrol/dataset/new/fixed'
+directory = '/home/mpcr/Desktop/rodrigo/deepcontrol/dataset'
 
 def is_number(s):
     try:
@@ -33,7 +33,9 @@ for (dirpath, dirnames, filenames) in walk(directory):
     break
 
 for i in range(len(data_files)):
-    if is_number(data_files[i][8]):
+    if is_number(data_files[i][9]):
+        data_files[i] = int(data_files[i][7] + data_files[i][8] + data_files[i][9])
+    elif is_number(data_files[i][8]):
         data_files[i] = int(data_files[i][7] + data_files[i][8])
     else:
         data_files[i] = int(data_files[i][7])
@@ -44,7 +46,7 @@ print(data_files)
 h5f = []
 
 for i in range(len(data_files)):
-    x = raw_input("Append %s? (Y/N): " % i)
+    x = raw_input("Append %s? (Y/N): " % data_files[i])
     if x == "Y" or x == "y":
         h5f.append(h5py.File(directory + '/dataset' + str(data_files[i]) + '.h5'))
     elif x == "s":
@@ -106,7 +108,7 @@ def return_keys(keystates):
 for i in range(nframes):
     #print("Type %s" % type(image_set[i,5,5]))
     ax.clear()
-    print("frame " + str(i))
+    print("frame " + str(i) + " of %s" % nframes)
     ax.imshow(image_set[i,:,:])
     key_string = return_keys(action_array_set[i])
     print(action_array_set)
