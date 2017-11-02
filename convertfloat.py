@@ -5,6 +5,8 @@ import numpy as np
 import h5py
 from os import walk
 
+directory = '/home/mpcr/Desktop/rodrigo/deepcontrol/datasettemp'
+
 def is_number(s):
     try:
         float(s)
@@ -22,12 +24,14 @@ def is_number(s):
 data_files = []
 
 # Get all filenames of datasets into a list
-for (dirpath, dirnames, filenames) in walk('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset'):
+for (dirpath, dirnames, filenames) in walk(directory):
     data_files.extend(filenames)
     break
 # Extract the dataset numbers
 for i in range(len(data_files)):
-    if is_number(data_files[i][8]):
+    if is_number(data_files[i][9]):
+        data_files[i] = int(data_files[i][7] + data_files[i][8] + data_files[i][9])
+    elif is_number(data_files[i][8]):
         data_files[i] = int(data_files[i][7] + data_files[i][8])
     else:
         data_files[i] = int(data_files[i][7])
@@ -38,7 +42,7 @@ print(data_files)
 for set_num in range(len(data_files)):
     h5f = []
     print("Converting datatypes on dataset %s" % data_files[set_num])
-    h5f.append(h5py.File('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset/dataset' + str(data_files[set_num]) + '.h5'))
+    h5f.append(h5py.File(directory + '/dataset' + str(data_files[set_num]) + '.h5'))
 
     image_set = np.asarray(h5f[0]['X'])
     action_array_set = np.asarray(h5f[0]['Y'])
@@ -48,7 +52,7 @@ for set_num in range(len(data_files)):
 
     image_set = np.squeeze(image_set)
     image_set = image_set.astype(np.uint8)
-    h5f = h5py.File('/home/mpcr/Desktop/rodrigo/deepcontrol/dataset/fixed/dataset%s.h5' % data_files[set_num], 'w')
+    h5f = h5py.File(directory + '/fixed/dataset%s.h5' % data_files[set_num], 'w')
     h5f.create_dataset('X', data=image_set)
     h5f.create_dataset('Y', data=action_array_set)
     h5f.create_dataset('Z', data=mph)
