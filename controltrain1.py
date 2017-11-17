@@ -180,7 +180,8 @@ while True: # Ongoing infinite loop
     next_batch = False
 
     current_sub_batch = 0
-    sub_batches = [np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1))]
+    image_sub_batches = [np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1))]
+    actions_sub_batches = [np.zeros((1,6)), np.zeros((1,6)), np.zeros((1,6)), np.zeros((1,6)), np.zeros((1,6)), np.zeros((1,6))]
 
     d.images = np.zeros((1,240,320,1))
     d.actions = np.zeros((1,6))
@@ -211,9 +212,10 @@ while True: # Ongoing infinite loop
                 print("NOW COLLECTING DATA")
             else:
                 print("STOPPED COLLECTING DATA")
-                # print(sub_batches,current_sub_batch)
+                # print(image_sub_batches,current_sub_batch)
                 current_sub_batch = 0
-                sub_batches = [np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1))]
+                image_sub_batches = [np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1))]
+                actions_sub_batches = [np.zeros((1,6)), np.zeros((1,6)), np.zeros((1,6)), np.zeros((1,6)), np.zeros((1,6)), np.zeros((1,6))]
                 batch_frame = 0
         last_frame_space = keystates['space']
 
@@ -242,8 +244,8 @@ while True: # Ongoing infinite loop
             if batch_frame % 100 == 0:
                 current_sub_batch += 1
 
-            sub_batches[current_sub_batch] = np.concatenate((sub_batches[current_sub_batch], c))
-            d.actions = np.concatenate((d.actions, keystates_array))
+            image_sub_batches[current_sub_batch] = np.concatenate((image_sub_batches[current_sub_batch], c))
+            actions_sub_batches[current_sub_batch] = np.concatenate((actions_sub_batches[current_sub_batch], keystates_array))
             d.mph = np.concatenate((d.mph, mph))
             batch_frame += 1
             if frame_num - batch_frame == 1:
@@ -258,9 +260,10 @@ while True: # Ongoing infinite loop
     # Perform this when batch collect is done
     print("Batch %s complete" % current_batch)
 
-    # Finally concatenate sub_batches onto d.images
-    for i in range(len(sub_batches)):
-        d.images = np.concatenate((d.images, sub_batches[i]))
+    # Finally concatenate image_sub_batches onto d.images
+    for i in range(len(image_sub_batches)):
+        d.images = np.concatenate((d.images, image_sub_batches[i]))
+        d.actions = np.concatenate((d.actions, actions_sub_batches[i]))
 
     print("Messed up: Press Z key to delete current batch. Then press the spacebar to restart collecting data.")
     print("Press the S key to to save. Then press the spacebar to start the next batch.")
