@@ -13,7 +13,7 @@ import time
 from os import walk
 import sys
 
-directory = '/home/mpcr/Desktop/rodrigo/deepcontrol/datasettemp'
+directory = '/home/mpcr/Desktop/rodrigo/deepcontrol/study_dataset/11-17rodrigo3'
 
 
 def is_number(s):
@@ -87,15 +87,19 @@ for set_num in range(len(data_files)):
     image_set = np.squeeze(image_set)
 
     print(image_set.shape)
+    print(action_array_set.shape)
 
-    for i in range(nframes-1):
+    i = 0
+    while i < nframes-1:
         print("frame " + str(i) + " out of " + str(nframes))
         print("frame sum: %s" % np.sum(image_set[i,:,:]))
         if np.sum(image_set[i,:,:]) < 10:
-            print(image_set.shape)
             image_set = np.delete(image_set, i, axis=0)
+            action_array_set = np.delete(action_array_set, i, axis=0)
             print("Removed!, Shape: %s" % (str(image_set.shape)))
         key_string = return_keys(action_array_set[i])
+        nframes = action_array_set.shape[0]
+        i += 1
 
     print(image_set.shape)
     print(action_array_set.shape)
