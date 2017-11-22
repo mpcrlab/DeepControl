@@ -54,7 +54,6 @@ while True:
         for i in range(len(data_files)):
             h5f.append(h5py.File(directory + '/dataset' + str(data_files[i]) + '.h5'))
 
-
             image_set = np.asarray(h5f[0]['X'])
             image_set = image_set[:,:,:,None]
             action_array_set = np.asarray(h5f[0]['Y'])
@@ -62,8 +61,12 @@ while True:
             mph = np.asarray(h5f[0]['Z'])
             mph = mph.astype(int)
 
-            nframes = action_array_set.shape[0]
-            print(str(data_files[i]) + ": " + str(nframes))
+            action_frame_num = action_array_set.shape[0]
+            image_frame_num = image_set.shape[0]
+            if action_frame_num == image_frame_num:
+                print("{}: Same!      Frame num: {}".format(str(i), action_frame_num))
+            else:
+                print("{}: Different! Action frame num: {}; Image frame num: {}".format(str(i), str(action_frame_num), str(image_frame_num)))
             h5f = []
         sys.exit()
     else:
@@ -83,6 +86,10 @@ while True:
         mph = mph.astype(int)
 
 
-        nframes = action_array_set.shape[0]
-        print(nframes)
+        action_frame_num = action_array_set.shape[0]
+        image_frame_num = image_set.shape[0]
+        if action_frame_num == image_frame_num:
+            print("Same!      Frame num: {}".format(action_frame_num))
+        else:
+            print("Different! Action frame num: {}; Image frame num: {}".format(str(action_frame_num), str(image_frame_num)))
         h5f = []
