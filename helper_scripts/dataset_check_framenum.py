@@ -10,7 +10,9 @@ import time
 from os import walk
 import sys
 
-directory = '/home/mpcr/Desktop/rodrigo/deepcontrol/dataset'
+directory = '/home/mpcr/Desktop/rodrigo/deepcontrol/'
+
+directory = directory + raw_input("Input folder path (from /deepcontrol): ")
 
 def is_number(s):
     try:
