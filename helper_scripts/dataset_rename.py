@@ -6,7 +6,7 @@ import h5py
 from os import walk
 import os
 
-directory = '/home/mpcr/Desktop/rodrigo/deepcontrol/study_dataset/Katycopy'
+directory = '/home/mpcr/Desktop/rodrigo/deepcontrol/study_dataset/11-21-laptop-rodrigo2'
 
 def is_number(s):
     try:
@@ -30,7 +30,9 @@ for (dirpath, dirnames, filenames) in walk(directory):
     break
 # Extract the dataset numbers
 for i in range(len(data_files)):
-    if is_number(data_files[i][8]):
+    if is_number(data_files[i][9]):
+        data_files[i] = int(data_files[i][7] + data_files[i][8] + data_files[i][9])
+    elif is_number(data_files[i][8]):
         data_files[i] = int(data_files[i][7] + data_files[i][8])
     else:
         data_files[i] = int(data_files[i][7])
