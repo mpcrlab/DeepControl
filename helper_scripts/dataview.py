@@ -45,47 +45,12 @@ print(data_files)
 
 h5f = []
 
-for i in range(len(data_files)):
-    x = raw_input("Append %s? (Y/N): " % data_files[i])
-    if x == "Y" or x == "y":
-        h5f.append(h5py.File(directory + '/dataset' + str(data_files[i]) + '.h5'))
-    elif x == "s":
-        break
-    else:
-        pass
-
-
-print(h5f[0]['X'].shape)
-image_set = np.asarray(h5f[0]['X'])
-image_set = image_set[:,:,:,None]
-action_array_set = np.asarray(h5f[0]['Y'])
-action_array_set = action_array_set.astype(int)
-mph = np.asarray(h5f[0]['Z'])
-mph = mph.astype(int)
-
-print(image_set[0])
-
-if len(h5f) > 1:
-    for i in range(1,len(h5f)):
-        print(np.asarray(h5f[i]['X'])[:,:,:,None].shape)
-        print(image_set.shape)
-        image_set = np.concatenate((image_set, np.asarray(h5f[i]['X'])[:,:,:,None]))
-        action_array_set = np.concatenate((action_array_set, np.asarray(h5f[i]['Y'])))
-        action_array_set = action_array_set.astype(int)
-        mph = np.concatenate((mph, h5f[i]['Z']))
-        mph = mph.astype(int)
-
-
-nframes = action_array_set.shape[0]
-
 fig = plt.figure()
 ax = fig.add_subplot(111)
 plt.ion()
 
 fig.show()
 fig.canvas.draw()
-
-image_set = np.squeeze(image_set)
 
 def return_keys(keystates):
     key_string = ""
@@ -104,12 +69,32 @@ def return_keys(keystates):
             if i == 5:
                 key_string += "left-"
     return key_string
+h5f = []
+while True:
+    x = raw_input("Type # of dataset to view: ")
+    if x == "all":
+        pass
+    else:
+        x = int(x)
 
-for i in range(nframes):
-    #print("Type %s" % type(image_set[i,5,5]))
-    ax.clear()
-    print("frame " + str(i) + " of %s" % nframes)
-    ax.imshow(image_set[i,:,:])
-    key_string = return_keys(action_array_set[i])
-    print(action_array_set)
-    fig.canvas.draw()
+    if not x in data_files:
+        print(str(x) + " isn't in the datasets")
+    else:
+        h5f.append(h5py.File(directory + '/dataset' + str(data_files[x]) + '.h5'))
+
+        image_set = np.asarray(h5f[0]['X'])
+        image_set = image_set[:,:,:,None]
+        image_set = np.squeeze(image_set)
+        action_array_set = np.asarray(h5f[0]['Y'])
+        action_array_set = action_array_set.astype(int)
+
+        nframes = action_array_set.shape[0]
+        for i in range(nframes-1):
+            ax.clear()
+            print("frame " + str(i) + " of %s" % nframes)
+            print(image_set[i,:,:].shape)
+            ax.imshow(image_set[i,:,:])
+            key_string = return_keys(action_array_set[i])
+            print(action_array_set)
+            fig.canvas.draw()
+            h5f = []
