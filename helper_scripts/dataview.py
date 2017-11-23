@@ -9,7 +9,9 @@ from scipy.misc import imshow
 import time
 from os import walk
 
-directory = '/home/mpcr/Desktop/rodrigo/deepcontrol/dataset'
+directory = '/home/mpcr/Desktop/rodrigo/deepcontrol/'
+
+directory = directory + raw_input("Input folder path (from /deepcontrol): ")
 
 def is_number(s):
     try:
