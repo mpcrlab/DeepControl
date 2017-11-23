@@ -1,3 +1,4 @@
+import time
 import pygame, sys
 import numpy as np
 from PIL import Image, ImageStat
@@ -71,12 +72,14 @@ def get_keys(keystates):
 def send_keys(board, keystates):
     if isinstance(keystates, dict):
         #do something about the key states here, now that the event queue has been processed
-        if keystates['enter']:
-            print("enter on")
-            board.digitalWrite(1, "HIGH")
-        else:
-            print("enter off")
-            board.digitalWrite(1, "LOW")
+        if 'enter' in keystates.values():
+            if keystates['enter']:
+                print("enter on")
+                board.digitalWrite(1, "HIGH")
+                board.digitalWrite(1, "LOW")
+                time.sleep(2)
+            else:
+                board.digitalWrite(1, "LOW")
 
 
         if keystates['up']:
