@@ -5,8 +5,9 @@ from network_run import *
 from controlfunctions import *
 
 import cv2
-import pygame
-import pygame.camera
+import pyocr, pyocr.builders
+from PIL import Image, ImageFont, ImageDraw, ImageOps, ImageStat
+import pygame, pygame.camera
 from pygame.locals import *
 from Pygame_UI import *
 import pyrealsense as pyrs
@@ -69,9 +70,19 @@ class RoverRun():
 
 		print("BBBBBBBBBBBBBBBBBBBBBBBBB")
 
-		#pyrs.start()
+		tools = pyocr.get_available_tools()
+		if len(tools) == 0:
+		    print("No OCR tool found")
+		    sys.exit(1)
+		# The tools are returned in the recommended order of usage
+		self.tool = tools[0]
+		print("Will use tool '%s'" % (self.tool.get_name()))
+		# Ex: Will use tool 'libtesseract'
 
-		#self.cam = pyrs.Device(device_id = 0, streams = [pyrs.stream.ColorStream(fps = 30)])
+		langs = self.tool.get_available_languages()
+		print("Available languages: %s" % ", ".join(langs))
+		self.lang_road = langs[5]
+		print("Will use lang '%s' for road" % (self.lang_road))
 
 		# Webcam (above is for Intel Realsense)
 		cv2.namedWindow("preview")
@@ -104,6 +115,9 @@ class RoverRun():
 		print("Setting pin 3 to output...")
 		board.pinMode(3, "OUTPUT")
 
+		print("Setting pin 2 to output...")
+		board.pinMode(2, "OUTPUT")
+
 		print("Done configuring board")
 
 
@@ -121,7 +135,7 @@ class RoverRun():
 		print("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF")
 		self.model = tflearn.DNN(self.network)
 		print("GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG")
-		self.model.load('/home/mpcr/Desktop/rodrigo/deepcontrol/saved_models/test6Alex1', weights_only=True)#/home/TF_Rover/RoverData/Felix_3frames10-20_FeatureScaling_DNN1',weights_only=True)
+		self.model.load('/home/mpcr/Desktop/rodrigo/deepcontrol/saved_models/11-17run1Alex1', weights_only=True)#/home/TF_Rover/RoverData/Felix_3frames10-20_FeatureScaling_DNN1',weights_only=True)
 		print("HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH")
 		self.run()
 
@@ -159,13 +173,18 @@ class RoverRun():
 			self.done = False
 			# send "enter" key to arduino and wait for 2 seconds to reset get_name
 			send_keys(board, {'right': False, 'space': False, 'shift': False, 'up': False, 'down': False, 'left': False, 'enter': True})
-			time.sleep(2)
+			send_keys(board, {'right': False, 'space': False, 'shift': False, 'up': False, 'down': False, 'left': False, 'enter': False})
 			start_time = time.time()
 			while not self.done:
 				rval, frame = vc.read()
 				cv2.imshow("preview", frame)
 				key = cv2.waitKey(20)
-				if time.time()-start_time > 5:
+				grayscaled_im = Image.fromarray(color.rgb2gray(frame))
+				txt_road = self.tool.image_to_string(
+			        grayscaled_im,
+			        lang=self.lang_road,
+			        builder=pyocr.builders.TextBuilder())
+				if is_off_road(txt_road):
 					self.done = True
 				if key == 27: # Exit on ESCAPE
 					sys.exit()
@@ -207,8 +226,8 @@ class RoverRun():
 
 
 				# send predicted keystate to the arduino
-				# send_keys(board, keystates)
-				send_keys(board, {'right': False, 'space': False, 'shift': False, 'up': False, 'down': False, 'left': False, 'enter': True})
+				send_keys(board, keystates)
+				# send_keys(board, {'right': False, 'space': False, 'shift': False, 'up': False, 'down': False, 'left': False, 'enter': True})
 				self.clock.tick(self.FPS)
 
 			elapsed_time = np.round(time.time() - start_time, 2)
