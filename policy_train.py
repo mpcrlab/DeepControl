@@ -22,6 +22,7 @@ from networkswitch import *
 import operator
 from random import randint
 from sklearn.preprocessing import scale
+from hyperdash import Experiment
 
 
 # prompt the user to choose the name of the saved model
@@ -48,6 +49,8 @@ val_name = 'dataset31.h5' # Dataset to use for validation
 num_iters = 0.
 num_classes = 20
 binary = False # Binary crossentropy or not
+hyperdash = True # is this using Hyperdash?
+
 if binary:
     num_classes = 6
 
@@ -86,7 +89,7 @@ def batch_get(filename, batch_size):
     X = X[rand,:,:]
     #Y[np.arange(batch_sz), y[rand]] = 1.0 # create one-hot label vector
     #X = np.mean(X[rand, 110:, :, :], 3, keepdims=True) # grayscale and crop frames
-    #assert(X.shape[0] == Y.shape[0]), 'Data and labels different sizes'
+    assert(X.shape[0] == Y.shape[0]), 'Data and labels different sizes'
 
     # Convert labels to one-hot vectors
     Z = np.zeros((batch_sz, num_classes))
@@ -132,6 +135,10 @@ def combo_to_onehot(keystates_array):
 # Validation set
 print('Validation Dataset: %s'%(val_name))
 
+# Hyperdash setup
+if hyperdash:
+    exp = Experiment(m_save + modelswitch[model_num].__name__)
+
 # Create input layer and label placeholder for the network
 labels = tf.placeholder(dtype=tf.float32, shape=[None, num_classes])
 network = tf.placeholder(dtype=tf.float32, shape=[None, 240, 320, num_stack])
@@ -170,8 +177,9 @@ i = -1
 while i < epochs:
     i += 1
     print("Epoch: %s" % i)
-    n = np.random.randint(0, len(fnames)-1, 1) # draw a random integer from 1 to # of files
+    n = np.random.randint(0, len(fnames), 1) # draw a random integer from 1 to # of files
     filename = fnames[n[0]] # name file according to the random number index
+    print(filename)
     # skip validation set if chosen
     if filename == val_name:
         continue
@@ -202,6 +210,10 @@ while i < epochs:
 
     train_acc, train_loss = model.session.run([acc, cost], feed_dict={network:X, labels:Y})
 
+    if hyperdash:
+        exp.metric("Accuracy", train_acc)
+        exp.metric("Loss", train_loss)
+
     train_summary = model.session.run(merged, feed_dict={network:X, labels:Y})
     writer2.add_summary(train_summary, i)
 
@@ -231,6 +243,11 @@ while i < epochs:
         # Get validation accuracy and error rate
         val_acc, val_loss, summary = model.session.run([acc, cost, merged],
                                                    feed_dict={network:tx, labels:ty})
+
+        if hyperdash:
+            exp.metric("Validation Accuracy", val_acc)
+            exp.metric("Validation Loss", val_loss)
+
         writer.add_summary(summary, i)
 
 # Save model and acc/error curves
@@ -241,3 +258,6 @@ model.save(m_save+modelswitch[model_num].__name__)
 os.chdir('/home/mpcr/Desktop/rodrigo/deepcontrol/policy_output')
 output_file = open(str(m_save+modelswitch[model_num].__name__) + '.txt', 'w')
 output_file.write(str(out_log))
+
+if hyperdash:
+    exp.end()
