@@ -3,9 +3,15 @@
 
 import numpy as np
 import h5py
+import os
 from os import walk
 
-directory = '/home/mpcr/Desktop/rodrigo/deepcontrol/datasettemp'
+directory = '/home/mpcr/Desktop/rodrigo/deepcontrol/study_dataset/'
+
+directory = directory + raw_input("Input folder name: ")
+
+if not os.path.isdir(directory + '/fixed/'):
+    os.makedirs(directory + '/fixed/')
 
 def is_number(s):
     try:
