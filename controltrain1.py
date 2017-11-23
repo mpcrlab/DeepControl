@@ -209,9 +209,9 @@ while True: # Ongoing infinite loop
             mixer.music.play()
             is_collecting = not is_collecting
             if is_collecting:
-                print("NOW COLLECTING DATA")
+                print("BEGINNING NEW 500 FRAME BATCH")
             else:
-                print("STOPPED COLLECTING DATA")
+                print("THREW AWAY LAST BATCH. PRESS SPACEBAR AGAIN TO START NEW BATCH")
                 # print(image_sub_batches,current_sub_batch)
                 current_sub_batch = 0
                 image_sub_batches = [np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1))]
@@ -266,13 +266,13 @@ while True: # Ongoing infinite loop
         d.actions = np.concatenate((d.actions, actions_sub_batches[i]))
 
     print("Messed up: Press Z key to delete current batch. Then press the spacebar to restart collecting data.")
-    print("Press the S key to to save. Then press the spacebar to start the next batch.")
+    print("Press the spacebar to to save. Then press the spacebar to start the next batch.")
     # Wait for key press to save batch or not save
     while True:
         next_batch = False
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_s:
+                if event.key == pygame.K_SPACE:
                     batch_start_time = time.time()
                     next_batch = True
                     d.save('/home/mpcr/Desktop/rodrigo/deepcontrol/study_dataset/' + subject_id + '/dataset%s.h5' % current_batch)
