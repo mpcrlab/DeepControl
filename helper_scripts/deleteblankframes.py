@@ -11,10 +11,15 @@ import matplotlib.cbook as cbook
 from scipy.misc import imshow
 import time
 from os import walk
+import os
 import sys
 
-directory = '/home/mpcr/Desktop/rodrigo/deepcontrol/study_dataset/11-17rodrigo3'
+directory = '/home/mpcr/Desktop/rodrigo/deepcontrol/study_dataset/'
 
+directory = directory + raw_input("Input folder name: ")
+
+if not os.path.isdir(directory + '/fixed/'):
+    os.makedirs(directory + '/fixed/')
 
 def is_number(s):
     try:
