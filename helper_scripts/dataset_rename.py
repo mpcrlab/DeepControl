@@ -6,7 +6,12 @@ import h5py
 from os import walk
 import os
 
-directory = '/home/mpcr/Desktop/rodrigo/deepcontrol/study_dataset/11-21-laptop-rodrigo2'
+directory = '/home/mpcr/Desktop/rodrigo/deepcontrol/'
+
+directory = directory + raw_input("Input folder path (from /deepcontrol): ")
+
+if not os.path.isdir(directory + '/renamed/'):
+    os.makedirs(directory + '/renamed/')
 
 def is_number(s):
     try:
