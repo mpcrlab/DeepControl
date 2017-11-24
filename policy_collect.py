@@ -50,8 +50,13 @@ time.sleep(1)
 print("Initializing pygame...")
 pygame.init()
 
-size = [64, 48]
+size = [560, 350]
+WHITE = ( 255, 255, 255)
+pygame.font.init()
+myfont = pygame.font.SysFont('Comic Sans MS', 30)
+textsurface = myfont.render('Some Text', False, (0, 0, 0))
 screen = pygame.display.set_mode(size)
+pygame.display.set_caption("Click Here to Control")
 
 pygame.key.set_repeat(50, 50)
 
@@ -172,12 +177,11 @@ c = c[None, :, :, None]
 start = time.time()
 
 current_frame = 0
+is_collecting = False
 
 while True: # Ongoing infinite loop
     current_batch = determine_batch_num(file_nums)
     batch_frame = 0
-    is_collecting = False
-    next_batch = False
 
     current_sub_batch = 0
     image_sub_batches = [np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1))]
@@ -187,10 +191,13 @@ while True: # Ongoing infinite loop
     d.actions = np.zeros((1,6))
     d.mph = np.zeros((1))
     os.system('clear')
-    print("Click on the small black window on the top left corner. Press spacebar once to begin collecting your driving data.")
     while batch_frame < frame_num: # Batch loop
         frame_start = time.time()
         current_frame += 1
+
+        # Pygame UI
+        screen.fill((255,255,255))
+        text_to_screen(screen, "Current Batch: {}; Current frame: {}".format(str(current_batch), str(batch_frame)), 0, 50, 30, (0, 0, 0))
 
         keystates = get_keys(keystates) # Get keys that are currently pressed down, returns keystates dictionary
 
@@ -209,9 +216,9 @@ while True: # Ongoing infinite loop
             mixer.music.play()
             is_collecting = not is_collecting
             if is_collecting:
-                print("BEGINNING NEW 500 FRAME BATCH")
+                print("BEGINNING NEW 500 FRAME BATCH {}".format(current_batch))
             else:
-                print("THREW AWAY LAST BATCH. PRESS SPACEBAR AGAIN TO START NEW BATCH")
+                print("THREW AWAY BATCH {0}. PRESS SPACEBAR AGAIN TO RESTART BATCH {0}".format(current_batch))
                 # print(image_sub_batches,current_sub_batch)
                 current_sub_batch = 0
                 image_sub_batches = [np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1))]
@@ -237,9 +244,11 @@ while True: # Ongoing infinite loop
         cropped_mph_im = im.crop(crop_mph)
         mph = np.full((1),curve_to_mph(cropped_mph_im, br_thresh))
 
+        text_to_screen(screen, "Pressed keys: {}".format(keystates_array), 0, 90, 20, (0, 0, 0))
 
         if is_collecting:
             print("Frames collected for this batch: " + str(batch_frame))
+            text_to_screen(screen, "Recording", 0, 0, 50, (200, 0, 0))
 
             if batch_frame % 100 == 0:
                 current_sub_batch += 1
@@ -250,8 +259,10 @@ while True: # Ongoing infinite loop
             batch_frame += 1
             if frame_num - batch_frame == 1:
                 mixer.music.play()
+        else:
+            text_to_screen(screen, "Not Recording", 0, 0, 50, (0, 200, 0))
 
-
+        pygame.display.flip()
         send_keys(board, keystates) #Send appropriate keystrokes from keystates through the arduino
 
         elapsed_frame = time.time()-frame_start
@@ -265,21 +276,8 @@ while True: # Ongoing infinite loop
         d.images = np.concatenate((d.images, image_sub_batches[i]))
         d.actions = np.concatenate((d.actions, actions_sub_batches[i]))
 
-    print("Messed up: Press Z key to delete current batch. Then press the spacebar to restart collecting data.")
-    print("Press the spacebar to to save. Then press the spacebar to start the next batch.")
-    # Wait for key press to save batch or not save
-    while True:
-        next_batch = False
-        for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    batch_start_time = time.time()
-                    next_batch = True
-                    d.save('/home/mpcr/Desktop/rodrigo/deepcontrol/study_dataset/' + subject_id + '/dataset%s.h5' % current_batch)
-                    file_nums.append(current_batch)
-                    file_nums.sort()
-                    print("TIME TOOK TO SAVE BATCH: %s" % (time.time()-batch_start_time))
-                elif event.key == pygame.K_z:
-                    next_batch = True
-        if next_batch == True:
-            break
+    print("Saving to file...")
+    batch_start_time = time.time()
+    d.save('/home/mpcr/Desktop/rodrigo/deepcontrol/study_dataset/' + subject_id + '/dataset%s.h5' % current_batch)
+    file_nums.append(current_batch)
+    file_nums.sort()
