@@ -1,5 +1,11 @@
 # DeepControl
 
+## [LINK TO PUBLIC DATASET](https://drive.google.com/drive/folders/1SjSheeJO09zaGBIkAiLw6ToQiecFdm4i?usp=sharing)
+
+Here's the link to the dataset mentioned in the paper.
+
+## Brief Overview
+
 A project to create a deep learning control system that learns by an air-gapped optical input stream rather than raw pixels. Applications include all sorts of infrastructure with legacy hardware (flood control, manufacturing plants, power plants).
 
 Specifically, below is the configuration.
@@ -8,7 +14,9 @@ Specifically, below is the configuration.
 
 ![screenshot1](https://github.com/mpcrlab/DeepControl/raw/master/opticalscreenshot.png)
 
-First, an agent trains on human gameplaying data to achieve comparable performance through imitation learning. Our implementation plays [Car and Driver](https://www.youtube.com/watch?v=kcSIBXA8nc4), which is a 1990's DOS racing game.
+### Abstract
+
+Historically, businesses and governments have hesitated to modernize their legacy systems and infrastructure to digital because of the enormous costs associated with this transition[1], including the overhaul of active and rigorously tested mechanical equipment and systems that have been operating reliably for many decades. The digitization of infrastructure presents clear benefits over the rigid but stable operation of legacy systems, including the ability to remotely control and oversee operation[2], implement predictive machine learning algorithms to anticipate component breakdown[3], or automate and optimize processes[4]. In response, we present an alternative scalable and adaptable deep learning control system paradigm that, if developed further, could be bootstrapped to autonomously control legacy systems, costing under $2,000 in some cases. Specifically, we used supervised learning to train an 8-layer convolutional neural network (CNN) on expert human gameplaying data of a racing simulator game running on a separate dedicated low-power computer. The training input was captured through a webcam, and when trained on a task of minimizing lap time on a designated track, the trained CNN achieved comparable performance when it drove the car. Our study not only corroborates the robustness of CNNs, but also suggests that in the near future, a control system that utilizes CNNs’ ability to map noisy optical input to appropriate actions could bridge the gap between analog human-controlled systems and surrounding digital infrastructure, particularly in industrial settings. Additionally, we are open-sourcing our dataset and code to expedite research and contribute to the democratization of AI at github.com/mpcrlab/DeepControl.
 
 ## Policy Network Data Collection
 ### Steps:
