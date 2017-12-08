@@ -17,8 +17,8 @@ Specifically, below is the configuration.
 
 ![configuration](http://imgur.com/gmTRUSn.jpg)
 
-## Policy Network Data Collection Steps
-### Steps:
+## Policy Network Procedure
+### Collection
 #### 1. Run policy_collect.py to collect data.
 This will store corresponding image frames, keypresses, and extracted car speed at every timestep into .h5 files in a "dataset" folder. It will store it in batches of 500 frames as one .h5 file, and to toggle data collection press the spacebar.
 
@@ -28,10 +28,10 @@ Since the policy_collect.py script produces extraneous blank frames, run deleteb
 #### 3. Run convertfloat.py
 Since policy_collect.py stores in float64 which is very heavy on RAM, use convertfloat.py to automatically convert all images in data files to uint8. This will result in no loss of information.
 
-## Policy Network Training
+### Training
 Run policy_train.py to train on data collected in the "dataset" folder. 
 
-## Policy Network Run (Real-time evaluation)
+## Real-time evaluation
 Run policy_run.py to run on the trained neural network and control the game real-time.
 
 ## Some Figures/Results
