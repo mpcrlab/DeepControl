@@ -184,8 +184,8 @@ while True: # Ongoing infinite loop
     batch_frame = 0
 
     current_sub_batch = 0
-    image_sub_batches = [np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1)), np.zeros((1,240,320,1))]
-    actions_sub_batches = [np.zeros((1,6)), np.zeros((1,6)), np.zeros((1,6)), np.zeros((1,6)), np.zeros((1,6)), np.zeros((1,6))]
+    image_sub_batches = [np.zeros((1,240,320,1)) for i in range(6)]
+    actions_sub_batches = [np.zeros((1,6)) for i in range(6)]
 
     d.images = np.zeros((1,240,320,1))
     d.actions = np.zeros((1,6))
