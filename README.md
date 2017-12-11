@@ -25,6 +25,10 @@ This will store corresponding image frames, keypresses, and extracted car speed 
 #### 2. Run deleteblankframes.py
 Since the policy_collect.py script produces extraneous blank frames, run deleteblankframes.py to delete them to prepare for policy network training.
 
+#### 3. Adjust and Drag to /dataset/ folder
+Drag collected data in the /sim-datasets/datasetname/fixed/fixed/ folder to /dataset/, renaming it with dataset_rename.py if needed.
+
+
 ### *Training*
 Run policy_train.py to train on data collected in the "dataset" folder. 
 
