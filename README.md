@@ -25,9 +25,6 @@ This will store corresponding image frames, keypresses, and extracted car speed 
 #### 2. Run deleteblankframes.py
 Since the policy_collect.py script produces extraneous blank frames, run deleteblankframes.py to delete them to prepare for policy network training.
 
-#### 3. Run convertfloat.py
-Since policy_collect.py stores in float64 which is very heavy on RAM, use convertfloat.py to automatically convert all images in data files to uint8. This will result in no loss of information.
-
 ### *Training*
 Run policy_train.py to train on data collected in the "dataset" folder. 
 
