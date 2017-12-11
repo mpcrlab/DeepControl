@@ -19,21 +19,21 @@ Specifically, below is the configuration.
 
 ## Policy Network Procedure
 ### *Collection*
-#### 1. Run policy_collect.py to collect data.
-This will store corresponding image frames, keypresses, and extracted car speed at every timestep into .h5 files in a "dataset" folder. It will store it in batches of 500 frames as one .h5 file, and to toggle data collection press the spacebar.
+#### 1. Run `policy_collect.py` to collect data.
+This will store corresponding image frames and keypresses at every timestep into .h5 files in a "dataset" folder. It will store it in batches of 500 frames as one .h5 file, and to toggle data collection press the spacebar.
 
-#### 2. Run deleteblankframes.py
-Since the policy_collect.py script produces extraneous blank frames, run deleteblankframes.py to delete them to prepare for policy network training.
+#### 2. `Run deleteblankframes.py`
+Since the policy_collect.py script produces extraneous blank frames, run `deleteblankframes.py` to delete them to prepare for policy network training.
 
 #### 3. Adjust and Drag to /dataset/ folder
-Drag collected data in the /sim-datasets/datasetname/fixed/fixed/ folder to /dataset/, renaming it with dataset_rename.py if needed.
+Drag collected data in the `/sim-datasets/datasetname/fixed/fixed/` to `/dataset/`, renaming it with `dataset_rename.py` if needed.
 
 
 ### *Training*
-Run policy_train.py to train on data collected in the "dataset" folder. 
+Run `policy_train.py` to train on data collected in `/dataset/`. 
 
 ### *Real-time evaluation*
-Run policy_run.py to run on the trained neural network and control the game real-time.
+Run `policy_run.py` to run on the trained neural network and control the simulator in real-time.
 
 ## Some Figures/Results
 
