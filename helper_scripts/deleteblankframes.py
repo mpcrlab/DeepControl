@@ -1,4 +1,4 @@
-# controltrain1.py leaves some blank frames in every .h5 file,
+# policy_collect.py leaves some blank frames in every .h5 file,
 # so this program deletes them
 
 import numpy as np
@@ -13,10 +13,11 @@ import time
 from os import walk
 import os
 import sys
+from convertfloat import *
 
-directory = '/home/mpcr/Desktop/rodrigo/deepcontrol/study_dataset/'
+directory = '/media/mpcr/Storage/deepcontrol/sim-datasets/'
 
-directory = directory + raw_input("Input folder name: ")
+directory = directory + raw_input("Input folder name from /media/mpcr/Storage/deepcontrol/sim-datasets/: ")
 
 if not os.path.isdir(directory + '/fixed/'):
     os.makedirs(directory + '/fixed/')
@@ -91,26 +92,23 @@ for set_num in range(len(data_files)):
 
     image_set = np.squeeze(image_set)
 
-    print(image_set.shape)
-    print(action_array_set.shape)
-
     i = 0
     while i < nframes-1:
-        print("frame " + str(i) + " out of " + str(nframes))
-        print("frame sum: %s" % np.sum(image_set[i,:,:]))
         if np.sum(image_set[i,:,:]) < 10:
             image_set = np.delete(image_set, i, axis=0)
             action_array_set = np.delete(action_array_set, i, axis=0)
-            print("Removed!, Shape: %s" % (str(image_set.shape)))
+            print("Removed!")
         key_string = return_keys(action_array_set[i])
         nframes = action_array_set.shape[0]
         i += 1
 
-    print(image_set.shape)
-    print(action_array_set.shape)
     h5f = h5py.File(directory + '/fixed/dataset%s.h5' % data_files[set_num], 'w')
     h5f.create_dataset('X', data=image_set)
     h5f.create_dataset('Y', data=action_array_set)
     h5f.create_dataset('Z', data=mph)
 
     h5f.close()
+
+print("Now converting floats...")
+
+convert_float(directory + '/fixed/')
